@@ -1,7 +1,7 @@
 package ee.deepmooc.auth
 
 import com.typesafe.config.Config
-import ee.deepmooc.model.User
+import ee.deepmooc.model.UserEntity
 import ee.deepmooc.repository.UserRepository
 import io.jooby.Extension
 import io.jooby.Jooby
@@ -33,17 +33,17 @@ class AuthExtension : Extension {
             val username = (profile.getAttribute("uid")!! as ArrayList<*>)[0] as String
 
             val userRepository = app.require(UserRepository::class)
-            val user: User? = userRepository.findByUsername(username)
+            val userEntity: UserEntity? = userRepository.findByUsername(username)
 
-            if (user != null) {
+            if (userEntity != null) {
                 profile.addRoles(
-                    user.courseRegistrations.map {
+                    userEntity.courseRegistrations.map {
                         it.getRoleString()
                     }
                 )
 
                 profile.addPermissions(
-                    user.courseRegistrations.map {
+                    userEntity.courseRegistrations.map {
                         it.getGrantedPermissions()
                     }.flatten()
                 )

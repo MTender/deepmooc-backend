@@ -7,19 +7,19 @@ class PermissionManager {
 
         private const val PERMISSION_PREFIX = "perm_"
 
-        fun constructPermissionString(courseCode: String, role: AccessLevel): String {
-            return PERMISSION_PREFIX + courseCode + "_" + role
+        fun constructPermissionString(courseCode: String, accessLevel: AccessLevel): String {
+            return PERMISSION_PREFIX + courseCode + "_" + accessLevel
         }
 
-        fun getGrantedPermissions(courseCode: String, userRole: AccessLevel): List<String> {
-            val grantedPermissions: MutableList<String> = mutableListOf()
+        fun getGrantedPermissions(courseCode: String, accessLevel: AccessLevel): Set<String> {
+            val grantedPermissions: MutableSet<String> = mutableSetOf()
 
-            for (role in AccessLevel.values()) {
-                grantedPermissions.add(constructPermissionString(courseCode, role))
-                if (role == userRole) break
+            for (level in AccessLevel.values()) {
+                grantedPermissions.add(constructPermissionString(courseCode, level))
+                if (level == accessLevel) break
             }
 
-            return grantedPermissions.toList()
+            return grantedPermissions.toSet()
         }
     }
 }

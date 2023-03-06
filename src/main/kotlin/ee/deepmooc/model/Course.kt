@@ -1,5 +1,6 @@
 package ee.deepmooc.model
 
+import kotlinx.serialization.Serializable
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -9,7 +10,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "courses")
-class Course (
+class CourseEntity(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,3 +22,8 @@ class Course (
     @Column(nullable = false)
     val code: String
 )
+
+@Serializable
+data class Course(val id: Long, val name: String, val code: String) {
+    constructor(courseEntity: CourseEntity) : this(courseEntity.id, courseEntity.name, courseEntity.code)
+}

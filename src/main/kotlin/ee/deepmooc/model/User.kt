@@ -1,5 +1,6 @@
 package ee.deepmooc.model
 
+import kotlinx.serialization.Serializable
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -10,7 +11,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "users")
-class User(
+class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
@@ -19,5 +20,14 @@ class User(
     val username: String,
 
     @OneToMany(mappedBy = "user")
-    val courseRegistrations: Set<CourseRegistration>
+    val courseRegistrations: Set<CourseRegistrationEntity>
 )
+
+@Serializable
+data class User(val id: Long, val username: String, val courseRegistrations: Set<CourseRegistration>) {
+    constructor(userEntity: UserEntity) : this(
+        userEntity.id,
+        userEntity.username,
+        userEntity.courseRegistrations.map { CourseRegistration(it) }.toSet()
+    )
+}

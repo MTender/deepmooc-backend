@@ -7,6 +7,7 @@ plugins {
     kotlin("kapt") version "1.8.10"
     kotlin("plugin.jpa") version "1.8.10"
     kotlin("plugin.allopen") version "1.8.10"
+    kotlin("plugin.serialization") version "1.8.10"
     id("io.jooby.run") version "2.16.1"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
@@ -27,11 +28,11 @@ application {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8", kotlinVersion))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     kapt("io.jooby:jooby-apt:$joobyVersion")
 
     implementation("io.jooby:jooby-jetty:$joobyVersion")
-    implementation("io.jooby:jooby-jackson:$joobyVersion")
     implementation("io.jooby:jooby-guice:$joobyVersion")
 
     implementation("io.jooby:jooby-pac4j:$joobyVersion")

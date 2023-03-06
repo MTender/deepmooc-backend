@@ -4,16 +4,16 @@ import ee.deepmooc.auth.AuthExtension
 import ee.deepmooc.auth.ServiceProviderMetadataController
 import ee.deepmooc.controller.TestController
 import ee.deepmooc.controller.UserController
+import ee.deepmooc.modules.SerializationModule
 import io.jooby.Kooby
 import io.jooby.di.GuiceModule
 import io.jooby.hibernate.HibernateModule
 import io.jooby.hibernate.TransactionalRequest
 import io.jooby.hikari.HikariModule
-import io.jooby.json.JacksonModule
 import io.jooby.runApp
 
 class App : Kooby({
-    install(JacksonModule())
+    install(SerializationModule())
     install(GuiceModule())
     install(HikariModule())
     install(HibernateModule())

@@ -1,8 +1,8 @@
 package ee.deepmooc.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import ee.deepmooc.auth.PermissionManager
 import ee.deepmooc.auth.RoleManager
+import kotlinx.serialization.Serializable
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -16,19 +16,19 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "course_registrations")
-class CourseRegistration(
+class CourseRegistrationEntity(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    val user: User,
+    val user: UserEntity,
 
     @ManyToOne
-    val course: Course,
+    @JoinColumn(name = "course_id", nullable = false)
+    val course: CourseEntity,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "access_level")
@@ -39,7 +39,16 @@ class CourseRegistration(
         return RoleManager.getRoleString(course.code, accessLevel)
     }
 
-    fun getGrantedPermissions(): List<String> {
+    fun getGrantedPermissions(): Set<String> {
         return PermissionManager.getGrantedPermissions(course.code, accessLevel)
     }
+}
+
+@Serializable
+data class CourseRegistration(val id: Long, val course: Course, val accessLevel: AccessLevel) {
+    constructor(courseRegistrationEntity: CourseRegistrationEntity) : this(
+        courseRegistrationEntity.id,
+        Course(courseRegistrationEntity.course),
+        courseRegistrationEntity.accessLevel
+    )
 }
