@@ -16,7 +16,7 @@ class UserEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @Column(nullable = false)
+    @Column(name = "username", nullable = false)
     val username: String,
 
     @OneToMany(mappedBy = "user")

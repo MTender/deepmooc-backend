@@ -16,10 +16,10 @@ class CourseEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     val name: String,
 
-    @Column(nullable = false)
+    @Column(name = "code", nullable = false)
     val code: String
 )
 

@@ -23,7 +23,7 @@ repositories {
 }
 
 application {
-    mainClass.set("ee.deepmooc.App")
+    mainClass.set("ee.deepmooc.AppKt")
 }
 
 dependencies {
