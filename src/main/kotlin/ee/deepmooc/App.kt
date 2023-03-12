@@ -1,10 +1,10 @@
 package ee.deepmooc
 
-import ee.deepmooc.auth.AuthExtension
+import ee.deepmooc.auth.SamlAuthModule
 import ee.deepmooc.auth.ServiceProviderMetadataController
 import ee.deepmooc.controller.TestController
 import ee.deepmooc.controller.UserController
-import ee.deepmooc.modules.SerializationModule
+import ee.deepmooc.modules.KotlinxSerializationModule
 import io.jooby.Kooby
 import io.jooby.di.GuiceModule
 import io.jooby.hibernate.HibernateModule
@@ -13,7 +13,7 @@ import io.jooby.hikari.HikariModule
 import io.jooby.runApp
 
 class App : Kooby({
-    install(SerializationModule())
+    install(KotlinxSerializationModule())
     install(GuiceModule())
     install(HikariModule())
     install(HibernateModule())
@@ -22,7 +22,7 @@ class App : Kooby({
     mvc(TestController::class)
     mvc(ServiceProviderMetadataController::class)
 
-    install(AuthExtension())
+    install(SamlAuthModule())
 
     mvc(UserController::class)
 })

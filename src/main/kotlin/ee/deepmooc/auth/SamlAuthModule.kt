@@ -14,7 +14,7 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.UrlResource
 import java.util.*
 
-class AuthExtension : Extension {
+class SamlAuthModule : Extension {
 
     override fun install(app: Jooby) {
         val rolesAndPermissionsGenerator = getRolesAndPermissionsGenerator(app)

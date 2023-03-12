@@ -16,7 +16,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.serializer
 import java.lang.reflect.Type
 
-class SerializationModule : Extension, MessageDecoder, MessageEncoder {
+class KotlinxSerializationModule : Extension, MessageDecoder, MessageEncoder {
 
     private val mediaType = MediaType.json
 

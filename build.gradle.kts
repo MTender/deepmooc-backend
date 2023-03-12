@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.jpa") version "1.8.10"
     kotlin("plugin.allopen") version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
-    id("io.jooby.run") version "2.16.1"
+    id("io.jooby.run") version "2.16.2"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
@@ -36,7 +36,7 @@ dependencies {
     implementation("io.jooby:jooby-guice:$joobyVersion")
 
     implementation("io.jooby:jooby-pac4j:$joobyVersion")
-    implementation("org.pac4j:pac4j-saml:4.5.6")
+    implementation("org.pac4j:pac4j-saml:4.5.7")
 
     implementation("io.jooby:jooby-hikari:$joobyVersion")
     implementation("io.jooby:jooby-hibernate:$joobyVersion")
