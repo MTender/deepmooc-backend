@@ -1,4 +1,4 @@
-package ee.deepmooc.auth
+package ee.deepmooc.controller
 
 import io.jooby.MediaType
 import io.jooby.annotations.GET

@@ -1,6 +1,7 @@
-package ee.deepmooc.auth
+package ee.deepmooc.modules
 
 import com.typesafe.config.Config
+import ee.deepmooc.auth.ApiAuthorizer
 import ee.deepmooc.model.UserEntity
 import ee.deepmooc.repository.UserRepository
 import io.jooby.Extension

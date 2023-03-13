@@ -43,8 +43,6 @@ dependencies {
     implementation("org.postgresql:postgresql:42.5.4")
 
     implementation("ch.qos.logback:logback-classic:1.4.5")
-//    implementation("org.hibernate.validator:hibernate-validator:6.2.5.Final")
-//    implementation("org.glassfish:javax.el:3.0.0")
 
     testImplementation(kotlin("test-junit5", kotlinVersion))
     testImplementation("io.jooby:jooby-test:$joobyVersion")

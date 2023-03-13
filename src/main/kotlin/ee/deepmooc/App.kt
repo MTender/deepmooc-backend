@@ -1,10 +1,10 @@
 package ee.deepmooc
 
-import ee.deepmooc.auth.SamlAuthModule
-import ee.deepmooc.auth.ServiceProviderMetadataController
+import ee.deepmooc.controller.ServiceProviderMetadataController
 import ee.deepmooc.controller.TestController
 import ee.deepmooc.controller.UserController
 import ee.deepmooc.modules.KotlinxSerializationModule
+import ee.deepmooc.modules.SamlAuthModule
 import io.jooby.Kooby
 import io.jooby.di.GuiceModule
 import io.jooby.hibernate.HibernateModule
