@@ -1,5 +1,6 @@
 val joobyVersion: String by project
 val kotlinVersion: String by project
+val komapperVersion: String by project
 
 plugins {
     application
@@ -10,6 +11,8 @@ plugins {
     kotlin("plugin.serialization") version "1.8.10"
     id("io.jooby.run") version "2.16.2"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+
+    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
 }
 
 group = "ee.deepmooc"
@@ -37,6 +40,14 @@ dependencies {
 
     implementation("io.jooby:jooby-pac4j:$joobyVersion")
     implementation("org.pac4j:pac4j-saml:4.5.7")
+
+    platform("org.komapper:komapper-platform:$komapperVersion").let {
+        implementation(it)
+        ksp(it)
+    }
+    implementation("org.komapper:komapper-starter-jdbc:$komapperVersion")
+    implementation("org.komapper:komapper-dialect-postgresql-jdbc:$komapperVersion")
+    ksp("org.komapper:komapper-processor:$komapperVersion")
 
     implementation("io.jooby:jooby-hikari:$joobyVersion")
     implementation("io.jooby:jooby-hibernate:$joobyVersion")

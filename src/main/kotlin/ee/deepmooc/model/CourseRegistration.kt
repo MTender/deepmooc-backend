@@ -1,54 +1,37 @@
 package ee.deepmooc.model
 
-import ee.deepmooc.auth.PermissionManager
-import ee.deepmooc.auth.RoleManager
 import kotlinx.serialization.Serializable
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.Table
+import org.komapper.annotation.EnumType
+import org.komapper.annotation.KomapperAutoIncrement
+import org.komapper.annotation.KomapperEntity
+import org.komapper.annotation.KomapperEnum
+import org.komapper.annotation.KomapperId
+import org.komapper.annotation.KomapperTable
 
-@Entity
-@Table(name = "course_registrations")
-class CourseRegistrationEntity(
+@KomapperEntity(aliases = ["courseRegistrations"])
+@KomapperTable(name = "course_registrations")
+data class CourseRegistrationEntity(
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @KomapperId
+    @KomapperAutoIncrement
     val id: Long,
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    val user: UserEntity,
+    val userId: Long,
 
-    @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
-    val course: CourseEntity,
+    val courseId: Long,
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "access_level")
+    @KomapperEnum(EnumType.NAME)
+    val accessLevel: AccessLevel
+)
+
+@Serializable
+data class CourseRegistration(
+    val user: User?,
+    val course: Course?,
     val accessLevel: AccessLevel
 ) {
 
-    fun getRoleString(): String {
-        return RoleManager.getRoleString(course.code, accessLevel)
-    }
+    constructor(entity: CourseRegistrationEntity, course: Course) : this(null, course, entity.accessLevel)
 
-    fun getGrantedPermissions(): Set<String> {
-        return PermissionManager.getGrantedPermissions(course.code, accessLevel)
-    }
-}
-
-@Serializable
-data class CourseRegistration(val id: Long, val course: Course, val accessLevel: AccessLevel) {
-    constructor(courseRegistrationEntity: CourseRegistrationEntity) : this(
-        courseRegistrationEntity.id,
-        Course(courseRegistrationEntity.course),
-        courseRegistrationEntity.accessLevel
-    )
+    constructor(entity: CourseRegistrationEntity, user: User) : this(user, null, entity.accessLevel)
 }

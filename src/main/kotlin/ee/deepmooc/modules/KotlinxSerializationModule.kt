@@ -20,6 +20,9 @@ class KotlinxSerializationModule : Extension, MessageDecoder, MessageEncoder {
 
     private val mediaType = MediaType.json
 
+    @ExperimentalSerializationApi
+    private val format = Json { explicitNulls = false }
+
     override fun install(application: Jooby) {
         application.decoder(mediaType, this)
         application.encoder(mediaType, this)
@@ -38,9 +41,10 @@ class KotlinxSerializationModule : Extension, MessageDecoder, MessageEncoder {
         }
     }
 
+    @ExperimentalSerializationApi
     override fun encode(ctx: Context, value: Any): ByteArray {
         ctx.setDefaultResponseType(mediaType)
         val serializer: KSerializer<Any> = serializer(ctx.route.returnType as Type)
-        return Json.encodeToString(serializer, value).encodeToByteArray()
+        return format.encodeToString(serializer, value).encodeToByteArray()
     }
 }

@@ -1,8 +1,13 @@
-package ee.deepmooc.auth
+package ee.deepmooc.service
 
 import ee.deepmooc.model.AccessLevel
+import ee.deepmooc.model.User
+import javax.inject.Inject
 
-class PermissionManager {
+class AuthService @Inject constructor(
+    private val userService: UserService
+) {
+
     companion object {
 
         private const val PERMISSION_PREFIX = "perm_"
@@ -21,5 +26,15 @@ class PermissionManager {
 
             return grantedPermissions.toSet()
         }
+    }
+
+    fun generateUserPermissions(username: String): Set<String> {
+        val user: User = userService.getUserWithCourses(username)
+
+        val permissions = user.courseRegistrations!!.flatMap {
+            getGrantedPermissions(it.course!!.code, it.accessLevel)
+        }
+
+        return permissions.toSet()
     }
 }

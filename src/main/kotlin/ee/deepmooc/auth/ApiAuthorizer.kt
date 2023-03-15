@@ -2,8 +2,7 @@ package ee.deepmooc.auth
 
 import ee.deepmooc.model.AccessLevel
 import ee.deepmooc.model.RequiredAccessLevel
-import io.jooby.StatusCode
-import io.jooby.exception.StatusCodeException
+import ee.deepmooc.service.AuthService
 import io.jooby.pac4j.Pac4jContext
 import org.pac4j.core.authorization.authorizer.Authorizer
 import org.pac4j.core.context.WebContext
@@ -18,15 +17,13 @@ class ApiAuthorizer : Authorizer<SAML2Profile> {
 
         val profile = profiles[0]
 
-        val courseCode: String = context.getRequestParameter("courseCode").orElseThrow {
-            StatusCodeException(StatusCode.BAD_REQUEST)
-        }
+        val courseCode: String = context.getRequestParameter("courseCode").orElse(null) ?: return true
 
         val requiredAccessLevel: AccessLevel =
             context.context.route.attributes[RequiredAccessLevel::class.simpleName] as AccessLevel?
-                ?: AccessLevel.values()[0]
+                ?: AccessLevel.values().last()
 
-        val requiredPermission: String = PermissionManager.constructPermissionString(courseCode, requiredAccessLevel)
+        val requiredPermission: String = AuthService.constructPermissionString(courseCode, requiredAccessLevel)
 
         return profile.permissions.contains(requiredPermission)
     }

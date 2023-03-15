@@ -1,29 +1,38 @@
 package ee.deepmooc.repository
 
+import ee.deepmooc.model.CourseEntity
+import ee.deepmooc.model.CourseRegistrationEntity
 import ee.deepmooc.model.UserEntity
+import ee.deepmooc.model.courseRegistrations
+import ee.deepmooc.model.courses
+import ee.deepmooc.model.users
+import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_CR
+import ee.deepmooc.repository.util.RepositoryUtils.Companion.U_JOIN_CR
+import org.komapper.core.dsl.Meta
+import org.komapper.core.dsl.QueryDsl
+import org.komapper.core.dsl.query.EntityStore
+import org.komapper.jdbc.JdbcDatabase
 import javax.inject.Inject
-import javax.persistence.EntityManager
-import javax.persistence.NonUniqueResultException
 
 class UserRepository @Inject constructor(
-    private val em: EntityManager
+    private val db: JdbcDatabase
 ) {
 
-    fun findByUsername(username: String): UserEntity? {
-        val userEntities = em.createQuery("from UserEntity where username = :username", UserEntity::class.java)
-            .setParameter("username", username)
-            .resultList
+    private val u = Meta.users
+    private val cr = Meta.courseRegistrations
+    private val c = Meta.courses
 
-        return when (userEntities.size) {
-            0 -> null
-            1 -> userEntities[0]
-            else -> throw NonUniqueResultException()
-        }
-    }
+    fun fetchCoursesByUsername(
+        username: String
+    ): Pair<UserEntity?, Map<CourseRegistrationEntity, CourseEntity?>> {
+        val store: EntityStore = db.runQuery(
+            QueryDsl.from(u)
+                .innerJoin(cr, U_JOIN_CR)
+                .innerJoin(c, C_JOIN_CR)
+                .where { u.username eq username }
+                .includeAll()
+        )
 
-    fun findByCourseCode(courseCode: String): List<UserEntity> {
-        return em.createQuery("select u from UserEntity u inner join u.courseRegistrations cr where cr.course.code = :courseCode", UserEntity::class.java)
-            .setParameter("courseCode", courseCode)
-            .resultList
+        return Pair(store[u].singleOrNull(), store.manyToOne(cr, c))
     }
 }

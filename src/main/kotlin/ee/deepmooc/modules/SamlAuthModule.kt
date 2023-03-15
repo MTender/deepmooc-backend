@@ -2,13 +2,13 @@ package ee.deepmooc.modules
 
 import com.typesafe.config.Config
 import ee.deepmooc.auth.ApiAuthorizer
-import ee.deepmooc.model.UserEntity
-import ee.deepmooc.repository.UserRepository
+import ee.deepmooc.service.AuthService
 import io.jooby.Extension
 import io.jooby.Jooby
 import io.jooby.pac4j.Pac4jModule
 import io.jooby.require
 import org.pac4j.core.authorization.generator.AuthorizationGenerator
+import org.pac4j.core.profile.UserProfile
 import org.pac4j.saml.client.SAML2Client
 import org.pac4j.saml.config.SAML2Configuration
 import org.springframework.core.io.ClassPathResource
@@ -31,24 +31,9 @@ class SamlAuthModule : Extension {
     private fun getRolesAndPermissionsGenerator(app: Jooby): AuthorizationGenerator {
         return AuthorizationGenerator { _, profile ->
 
-            val username = (profile.getAttribute("uid")!! as ArrayList<*>)[0] as String
+            val authService = app.require(AuthService::class)
 
-            val userRepository = app.require(UserRepository::class)
-            val userEntity: UserEntity? = userRepository.findByUsername(username)
-
-            if (userEntity != null) {
-                profile.addRoles(
-                    userEntity.courseRegistrations.map {
-                        it.getRoleString()
-                    }
-                )
-
-                profile.addPermissions(
-                    userEntity.courseRegistrations.map {
-                        it.getGrantedPermissions()
-                    }.flatten()
-                )
-            }
+            profile.addPermissions(authService.generateUserPermissions(profile.getUid()))
 
             Optional.of(profile)
         }
@@ -63,7 +48,7 @@ class SamlAuthModule : Extension {
         )
 
         samlConfig.serviceProviderEntityId = conf.getString("saml.spEntityId")
-        samlConfig.setServiceProviderMetadataPath(conf.getString("saml.spMetadataPath"))
+//        samlConfig.setServiceProviderMetadataPath(conf.getString("saml.spMetadataPath"))
         samlConfig.isAuthnRequestSigned = true
 
         val samlClient = SAML2Client(samlConfig)
@@ -73,4 +58,8 @@ class SamlAuthModule : Extension {
 
         return samlClient
     }
+}
+
+fun UserProfile.getUid(): String {
+    return (this.getAttribute("uid")!! as ArrayList<*>)[0] as String
 }
