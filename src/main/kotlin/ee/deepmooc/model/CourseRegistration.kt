@@ -14,7 +14,7 @@ data class CourseRegistrationEntity(
 
     @KomapperId
     @KomapperAutoIncrement
-    val id: Long,
+    val id: Long = 0,
 
     val userId: Long,
 
@@ -28,10 +28,16 @@ data class CourseRegistrationEntity(
 data class CourseRegistration(
     val user: User?,
     val course: Course?,
-    val accessLevel: AccessLevel
+    val accessLevel: AccessLevel,
+    val groups: Set<Group>?
 ) {
 
-    constructor(entity: CourseRegistrationEntity, course: Course) : this(null, course, entity.accessLevel)
+    constructor(entity: CourseRegistrationEntity, course: Course, groups: Set<Group>) : this(
+        null,
+        course,
+        entity.accessLevel,
+        groups
+    )
 
-    constructor(entity: CourseRegistrationEntity, user: User) : this(user, null, entity.accessLevel)
+    constructor(entity: CourseRegistrationEntity, user: User) : this(user, null, entity.accessLevel, null)
 }

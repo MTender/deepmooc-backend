@@ -1,11 +1,15 @@
 package ee.deepmooc.service
 
 import ee.deepmooc.model.AccessLevel
-import ee.deepmooc.model.User
+import ee.deepmooc.model.CourseEntity
+import ee.deepmooc.model.CourseRegistrationEntity
+import ee.deepmooc.repository.CourseRepository
+import ee.deepmooc.repository.UserRepository
 import javax.inject.Inject
 
 class AuthService @Inject constructor(
-    private val userService: UserService
+    private val userRepository: UserRepository,
+    private val courseRepository: CourseRepository
 ) {
 
     companion object {
@@ -29,10 +33,13 @@ class AuthService @Inject constructor(
     }
 
     fun generateUserPermissions(username: String): Set<String> {
-        val user: User = userService.getUserWithCourses(username)
+        val userEntity = userRepository.fetchByUsername(username)
 
-        val permissions = user.courseRegistrations!!.flatMap {
-            getGrantedPermissions(it.course!!.code, it.accessLevel)
+        val courseRegistrations: Map<CourseRegistrationEntity, CourseEntity?> =
+            courseRepository.fetchCourseRegistrationsOfUser(userEntity.id)
+
+        val permissions = courseRegistrations.flatMap {
+            getGrantedPermissions(it.value!!.code, it.key.accessLevel)
         }
 
         return permissions.toSet()

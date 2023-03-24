@@ -6,26 +6,25 @@ import org.komapper.annotation.KomapperEntity
 import org.komapper.annotation.KomapperId
 import org.komapper.annotation.KomapperTable
 
-@KomapperEntity(aliases = ["users"])
-@KomapperTable(name = "users")
-data class UserEntity(
+@KomapperEntity(aliases = ["groups"])
+@KomapperTable(name = "groups")
+data class GroupEntity(
     @KomapperId
     @KomapperAutoIncrement
     val id: Long = 0,
 
-    val username: String
+    val name: String,
+
+    val courseId: Long
 )
 
 @Serializable
-data class User(
+data class Group(
     val id: Long,
-    val username: String,
+    val name: String,
+    val course: Course?,
     val courseRegistrations: Set<CourseRegistration>?
 ) {
 
-    constructor(userEntity: UserEntity, courseRegistrations: Set<CourseRegistration>? = null) : this(
-        userEntity.id,
-        userEntity.username,
-        courseRegistrations
-    )
+    constructor(entity: GroupEntity) : this(entity.id, entity.name, null, null)
 }

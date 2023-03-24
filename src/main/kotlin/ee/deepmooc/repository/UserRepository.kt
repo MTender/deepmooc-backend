@@ -1,6 +1,5 @@
 package ee.deepmooc.repository
 
-import ee.deepmooc.model.CourseEntity
 import ee.deepmooc.model.CourseRegistrationEntity
 import ee.deepmooc.model.UserEntity
 import ee.deepmooc.model.courseRegistrations
@@ -10,7 +9,7 @@ import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_CR
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.U_JOIN_CR
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
-import org.komapper.core.dsl.query.EntityStore
+import org.komapper.core.dsl.query.single
 import org.komapper.jdbc.JdbcDatabase
 import javax.inject.Inject
 
@@ -22,17 +21,32 @@ class UserRepository @Inject constructor(
     private val cr = Meta.courseRegistrations
     private val c = Meta.courses
 
-    fun fetchCoursesByUsername(
-        username: String
-    ): Pair<UserEntity?, Map<CourseRegistrationEntity, CourseEntity?>> {
-        val store: EntityStore = db.runQuery(
+    fun fetchByUsername(username: String): UserEntity {
+        return db.runQuery(
             QueryDsl.from(u)
-                .innerJoin(cr, U_JOIN_CR)
-                .innerJoin(c, C_JOIN_CR)
                 .where { u.username eq username }
+                .single()
+        )
+    }
+
+    fun fetchUsersRegisteredToCourse(courseCode: String): Map<CourseRegistrationEntity, UserEntity?> {
+        val store = db.runQuery(
+            QueryDsl.from(c)
+                .leftJoin(cr, C_JOIN_CR)
+                .leftJoin(u, U_JOIN_CR)
+                .where { c.code eq courseCode }
                 .includeAll()
         )
 
-        return Pair(store[u].singleOrNull(), store.manyToOne(cr, c))
+        if (store[c].isEmpty()) throw IllegalArgumentException("No such course")
+
+        return store.oneToOne(cr, u)
+    }
+
+    fun save(userEntity: UserEntity): UserEntity {
+        return db.runQuery(
+            QueryDsl.insert(u)
+                .single(userEntity)
+        )
     }
 }

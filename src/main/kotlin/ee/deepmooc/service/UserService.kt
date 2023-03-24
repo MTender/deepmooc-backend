@@ -1,8 +1,7 @@
 package ee.deepmooc.service
 
-import ee.deepmooc.model.Course
-import ee.deepmooc.model.CourseRegistration
 import ee.deepmooc.model.User
+import ee.deepmooc.model.UserEntity
 import ee.deepmooc.repository.UserRepository
 import javax.inject.Inject
 
@@ -10,14 +9,16 @@ class UserService @Inject constructor(
     private val userRepository: UserRepository
 ) {
 
-    fun getUserWithCourses(username: String): User {
-        val (userEntity, registrationsToCourses) = userRepository.fetchCoursesByUsername(username)
+    fun getUser(username: String): User {
+        val userEntity = userRepository.fetchByUsername(username)
 
-        if (userEntity == null) throw IllegalArgumentException("No such user")
+        return User(userEntity)
+    }
 
-        val courseRegistrations = registrationsToCourses
-            .mapTo(mutableSetOf()) { CourseRegistration(it.key, Course(it.value!!)) }
-
-        return User(userEntity, courseRegistrations)
+    fun createUser(user: User) {
+        val userEntity = UserEntity(
+            username = user.username
+        )
+        userRepository.save(userEntity)
     }
 }

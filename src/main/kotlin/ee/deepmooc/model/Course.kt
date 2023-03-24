@@ -12,7 +12,7 @@ data class CourseEntity(
 
     @KomapperId
     @KomapperAutoIncrement
-    val id: Long,
+    val id: Long = 0,
 
     val name: String,
 
@@ -21,16 +21,18 @@ data class CourseEntity(
 
 @Serializable
 data class Course(
+    val id: Long,
     val name: String,
     val code: String,
-    val courseRegistrations: Set<CourseRegistration>?
+    val courseRegistrations: Set<CourseRegistration>?,
+    val groups: Set<Group>?
 ) {
 
-    constructor(entity: CourseEntity) : this(entity.name, entity.code, null)
-
-    constructor(entity: CourseEntity, courseRegistrations: Set<CourseRegistration>) : this(
+    constructor(entity: CourseEntity, groups: Set<Group>? = null) : this(
+        entity.id,
         entity.name,
         entity.code,
-        courseRegistrations
+        null,
+        groups
     )
 }
