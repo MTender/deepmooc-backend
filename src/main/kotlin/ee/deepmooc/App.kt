@@ -4,7 +4,6 @@ import com.typesafe.config.Config
 import ee.deepmooc.controller.CourseController
 import ee.deepmooc.controller.GeneralController
 import ee.deepmooc.controller.ServiceProviderMetadataController
-import ee.deepmooc.controller.TestController
 import ee.deepmooc.modules.KomapperModule
 import ee.deepmooc.modules.KomapperTransactionalRequest
 import ee.deepmooc.modules.KotlinxSerializationModule
@@ -22,7 +21,6 @@ class App : Kooby({
     install(KomapperModule())
     decorator(KomapperTransactionalRequest())
 
-    mvc(TestController::class)
     mvc(ServiceProviderMetadataController::class)
 
     val testAuth: Boolean = config.getBooleanOrDefault("useTestAuth", false)
