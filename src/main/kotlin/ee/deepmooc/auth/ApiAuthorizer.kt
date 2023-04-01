@@ -6,11 +6,11 @@ import ee.deepmooc.service.AuthService
 import io.jooby.pac4j.Pac4jContext
 import org.pac4j.core.authorization.authorizer.Authorizer
 import org.pac4j.core.context.WebContext
-import org.pac4j.saml.profile.SAML2Profile
+import org.pac4j.core.profile.CommonProfile
 
-class ApiAuthorizer : Authorizer<SAML2Profile> {
+class ApiAuthorizer : Authorizer<CommonProfile> {
 
-    override fun isAuthorized(context: WebContext?, profiles: MutableList<SAML2Profile>?): Boolean {
+    override fun isAuthorized(context: WebContext?, profiles: MutableList<CommonProfile>?): Boolean {
         if (context == null || profiles == null) return false
         if (context !is Pac4jContext) return false
         if (profiles.size != 1) return false
