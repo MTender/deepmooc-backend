@@ -4,14 +4,13 @@ val komapperVersion: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.8.10"
-    kotlin("kapt") version "1.8.10"
-    kotlin("plugin.jpa") version "1.8.10"
-    kotlin("plugin.allopen") version "1.8.10"
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
+    kotlin("kapt") version "1.8.20"
+    kotlin("plugin.serialization") version "1.8.20"
 
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
+    id("com.google.devtools.ksp") version "1.8.20-1.0.10"
+    id("io.jooby.openAPI") version "2.16.2"
 }
 
 group = "ee.deepmooc"
@@ -53,6 +52,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.5.4")
 
     implementation("ch.qos.logback:logback-classic:1.4.6")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 
     testImplementation(kotlin("test-junit5", kotlinVersion))
     testImplementation("io.jooby:jooby-test:$joobyVersion")
@@ -81,8 +81,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.javaParameters = true
 }
 
-allOpen {
-    annotation("javax.persistence.Entity")
-    annotation("javax.persistence.MappedSuperclass")
-    annotation("javax.persistence.Embedabble")
+// openAPI
+tasks.joobyRun {
+    dependsOn(tasks.openAPI)
+}
+
+tasks.jar {
+    dependsOn(tasks.openAPI)
 }
