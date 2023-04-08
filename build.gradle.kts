@@ -48,8 +48,7 @@ dependencies {
     ksp("org.komapper:komapper-processor:$komapperVersion")
 
     implementation("io.jooby:jooby-hikari:$joobyVersion")
-    implementation("io.jooby:jooby-hibernate:$joobyVersion")
-    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("org.postgresql:postgresql:42.6.0")
 
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
