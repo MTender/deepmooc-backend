@@ -6,6 +6,9 @@
     </encoder>
   </appender>
 
+  <logger name="org.komapper.Sql" level="debug" />
+  <logger name="org.komapper.Transaction" level="trace" />
+
   <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
