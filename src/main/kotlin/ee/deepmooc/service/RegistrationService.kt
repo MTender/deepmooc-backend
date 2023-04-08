@@ -73,7 +73,7 @@ class RegistrationService @Inject constructor(
     }
 
     fun addUsersToGroup(userIds: List<Long>, groupId: Long) {
-        val courseRegistrationEntities = courseRegistrationRepository.findByUserIdsAndGroupId(userIds, groupId)
+        val courseRegistrationEntities = courseRegistrationRepository.findByUserIdsAndGroupIdThroughCourse(userIds, groupId)
 
         val groupRegistrationEntities = courseRegistrationEntities.map {
             GroupRegistrationEntity(
@@ -86,7 +86,7 @@ class RegistrationService @Inject constructor(
     }
 
     fun removeUsersFromGroup(userIds: List<Long>, groupId: Long) {
-        val courseRegistrationEntities = courseRegistrationRepository.findByUserIdsAndGroupId(userIds, groupId)
+        val courseRegistrationEntities = courseRegistrationRepository.findByUserIdsAndGroupIdThroughCourse(userIds, groupId)
 
         groupRegistrationRepository.deleteByGroupIdAndCourseRegistrationIds(
             groupId,

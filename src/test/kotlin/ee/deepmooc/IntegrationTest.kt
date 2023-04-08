@@ -48,9 +48,14 @@ open class IntegrationTest {
         @JvmStatic
         protected val g = Meta.groups
 
+        @Volatile
+        private var initialized = false
+
         @BeforeAll
         @JvmStatic
         fun generateTestData(application: Jooby) {
+            if (initialized) return
+
             val db = application.require(JdbcDatabase::class)
 
             // users
@@ -133,65 +138,51 @@ open class IntegrationTest {
 
             // create registrations
 
-            db.runQuery(
-                QueryDsl.insert(cr).onDuplicateKeyIgnore(cr.userId, cr.courseId)
-                    .multiple(
-                        CourseRegistrationEntity(
-                            userId = testUsers[0].id,
-                            courseId = testCourses[0].id,
-                            accessLevel = AccessLevel.TEACHER
-                        ),
-                        CourseRegistrationEntity(
-                            userId = testUsers[0].id,
-                            courseId = testCourses[1].id,
-                            accessLevel = AccessLevel.STUDENT
-                        ),
-                        CourseRegistrationEntity(
-                            userId = testUsers[1].id,
-                            courseId = testCourses[0].id,
-                            accessLevel = AccessLevel.STUDENT
-                        ),
-                        CourseRegistrationEntity(
-                            userId = testUsers[1].id,
-                            courseId = testCourses[1].id,
-                            accessLevel = AccessLevel.STUDENT
-                        )
-                    )
-            )
-
             testCourseRegistrations.addAll(
                 db.runQuery(
-                    QueryDsl.from(cr)
-                        .where {
-                            cr.userId inList testUsers.map { it.id }
-                        }
-                        .orderBy(cr.id)
-                )
-            )
-
-            db.runQuery(
-                QueryDsl.insert(gr).onDuplicateKeyIgnore(gr.groupId, gr.courseRegistrationId)
-                    .multiple(
-                        GroupRegistrationEntity(
-                            groupId = testGroups[0].id,
-                            courseRegistrationId = testCourseRegistrations[2].id
-                        ),
-                        GroupRegistrationEntity(
-                            groupId = testGroups[2].id,
-                            courseRegistrationId = testCourseRegistrations[2].id
+                    QueryDsl.insert(cr)
+                        .multiple(
+                            CourseRegistrationEntity(
+                                userId = testUsers[0].id,
+                                courseId = testCourses[0].id,
+                                accessLevel = AccessLevel.TEACHER
+                            ),
+                            CourseRegistrationEntity(
+                                userId = testUsers[0].id,
+                                courseId = testCourses[1].id,
+                                accessLevel = AccessLevel.STUDENT
+                            ),
+                            CourseRegistrationEntity(
+                                userId = testUsers[1].id,
+                                courseId = testCourses[0].id,
+                                accessLevel = AccessLevel.STUDENT
+                            ),
+                            CourseRegistrationEntity(
+                                userId = testUsers[1].id,
+                                courseId = testCourses[1].id,
+                                accessLevel = AccessLevel.STUDENT
+                            )
                         )
-                    )
+                )
             )
 
             testGroupRegistrations.addAll(
                 db.runQuery(
-                    QueryDsl.from(gr)
-                        .where {
-                            gr.courseRegistrationId inList testCourseRegistrations.map { it.id }
-                        }
-                        .orderBy(gr.id)
+                    QueryDsl.insert(gr)
+                        .multiple(
+                            GroupRegistrationEntity(
+                                groupId = testGroups[0].id,
+                                courseRegistrationId = testCourseRegistrations[2].id
+                            ),
+                            GroupRegistrationEntity(
+                                groupId = testGroups[2].id,
+                                courseRegistrationId = testCourseRegistrations[2].id
+                            )
+                        )
                 )
             )
+
+            initialized = true
         }
     }
 }

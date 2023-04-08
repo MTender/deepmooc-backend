@@ -9,6 +9,7 @@ import ee.deepmooc.model.groupRegistrations
 import ee.deepmooc.model.groups
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.CR_JOIN_GR
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_CR
+import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_G
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.G_JOIN_GR
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
@@ -58,12 +59,13 @@ class CourseRegistrationRepository @Inject constructor(
         )
     }
 
-    fun findByUserIdsAndGroupId(userIds: List<Long>, groupId: Long): List<CourseRegistrationEntity> {
+    fun findByUserIdsAndGroupIdThroughCourse(userIds: List<Long>, groupId: Long): List<CourseRegistrationEntity> {
         return db.runQuery(
             QueryDsl.from(cr)
-                .leftJoin(gr) { cr.id eq gr.courseRegistrationId }
+                .leftJoin(c, C_JOIN_CR)
+                .leftJoin(g, C_JOIN_G)
                 .where {
-                    gr.id eq groupId
+                    g.id eq groupId
                     and {
                         cr.userId inList userIds
                     }
