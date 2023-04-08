@@ -13,32 +13,30 @@ class GroupRegistrationRepository @Inject constructor(
 
     private val gr = Meta.groupRegistrations
 
-    fun save(groupRegistrationEntity: GroupRegistrationEntity): GroupRegistrationEntity {
-        return save(listOf(groupRegistrationEntity))[0]
-    }
-
-    fun save(groupRegistrationEntities: List<GroupRegistrationEntity>): List<GroupRegistrationEntity> {
-        return db.runQuery(
-            QueryDsl.insert(gr)
+    fun save(groupRegistrationEntities: List<GroupRegistrationEntity>) {
+        db.runQuery(
+            QueryDsl.insert(gr).onDuplicateKeyIgnore()
                 .multiple(groupRegistrationEntities)
         )
     }
 
-    fun deleteByGroupIdAndCourseRegistrationId(groupId: Long, courseRegistrationId: Long) {
+    fun deleteByGroupIdAndCourseRegistrationIds(groupId: Long, courseRegistrationIds: List<Long>) {
         db.runQuery(
             QueryDsl.delete(gr)
                 .where {
                     gr.groupId eq groupId
-                    gr.courseRegistrationId eq courseRegistrationId
+                    and {
+                        gr.courseRegistrationId inList courseRegistrationIds
+                    }
                 }
         )
     }
 
-    fun deleteByCourseRegistrationId(courseRegistrationId: Long) {
+    fun deleteByCourseRegistrationIds(courseRegistrationIds: List<Long>) {
         db.runQuery(
             QueryDsl.delete(gr)
                 .where {
-                    gr.courseRegistrationId eq courseRegistrationId
+                    gr.courseRegistrationId inList courseRegistrationIds
                 }
         )
     }

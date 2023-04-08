@@ -13,7 +13,6 @@ import ee.deepmooc.repository.util.RepositoryUtils.Companion.G_JOIN_GR
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.core.dsl.query.EntityStore
-import org.komapper.core.dsl.query.single
 import org.komapper.jdbc.JdbcDatabase
 import javax.inject.Inject
 
@@ -47,28 +46,42 @@ class CourseRegistrationRepository @Inject constructor(
         return combinedMap
     }
 
-    fun fetchByUserIdAndCourseId(userId: Long, courseId: Long): CourseRegistrationEntity {
+    fun findByUserIdsAndCourseId(userIds: List<Long>, courseId: Long): List<CourseRegistrationEntity> {
         return db.runQuery(
             QueryDsl.from(cr)
                 .where {
-                    cr.userId eq userId
                     cr.courseId eq courseId
+                    and {
+                        cr.userId inList userIds
+                    }
                 }
-                .single()
         )
     }
 
-    fun save(courseRegistrationEntity: CourseRegistrationEntity): CourseRegistrationEntity {
+    fun findByUserIdsAndGroupId(userIds: List<Long>, groupId: Long): List<CourseRegistrationEntity> {
         return db.runQuery(
-            QueryDsl.insert(cr)
-                .single(courseRegistrationEntity)
+            QueryDsl.from(cr)
+                .leftJoin(gr) { cr.id eq gr.courseRegistrationId }
+                .where {
+                    gr.id eq groupId
+                    and {
+                        cr.userId inList userIds
+                    }
+                }
         )
     }
 
-    fun deleteById(id: Long) {
+    fun save(courseRegistrationEntities: List<CourseRegistrationEntity>) {
+        db.runQuery(
+            QueryDsl.insert(cr)
+                .multiple(courseRegistrationEntities)
+        )
+    }
+
+    fun deleteByIds(ids: List<Long>) {
         db.runQuery(
             QueryDsl.delete(cr)
-                .where { cr.id eq id }
+                .where { cr.id inList ids }
         )
     }
 }

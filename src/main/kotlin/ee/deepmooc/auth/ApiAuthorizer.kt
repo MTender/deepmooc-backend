@@ -1,7 +1,7 @@
 package ee.deepmooc.auth
 
 import ee.deepmooc.model.AccessLevel
-import ee.deepmooc.model.RequiredAccessLevel
+import ee.deepmooc.model.MinimumAccessLevel
 import ee.deepmooc.service.AuthService
 import io.jooby.pac4j.Pac4jContext
 import org.pac4j.core.authorization.authorizer.Authorizer
@@ -19,11 +19,11 @@ class ApiAuthorizer : Authorizer<CommonProfile> {
 
         val courseCode: String = context.getRequestParameter("courseCode").orElse(null) ?: return true
 
-        val requiredAccessLevel: AccessLevel =
-            context.context.route.attributes[RequiredAccessLevel::class.simpleName] as AccessLevel?
+        val minimumAccessLevel: AccessLevel =
+            context.context.route.attributes[MinimumAccessLevel::class.simpleName] as AccessLevel?
                 ?: AccessLevel.values().last()
 
-        val requiredPermission: String = AuthService.constructPermissionString(courseCode, requiredAccessLevel)
+        val requiredPermission: String = AuthService.constructPermissionString(courseCode, minimumAccessLevel)
 
         return profile.permissions.contains(requiredPermission)
     }

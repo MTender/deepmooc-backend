@@ -9,9 +9,12 @@ import ee.deepmooc.modules.KomapperTransactionalRequest
 import ee.deepmooc.modules.KotlinxSerializationModule
 import ee.deepmooc.modules.SamlAuthModule
 import ee.deepmooc.modules.TestAuthModule
+import ee.deepmooc.repository.CourseRepository
 import io.jooby.Kooby
+import io.jooby.StatusCode
 import io.jooby.di.GuiceModule
 import io.jooby.hikari.HikariModule
+import io.jooby.require
 import io.jooby.runApp
 
 class App : Kooby({
@@ -32,7 +35,24 @@ class App : Kooby({
     }
 
     mvc(GeneralController::class)
-    mvc(CourseController::class)
+
+    routes {
+        before {
+            val courseCode = ctx.path(CourseController.COURSE_CODE_PATH_PARAM).value()
+
+            val courseRepository = require(CourseRepository::class)
+
+            val courseEntity = courseRepository.findByCode(courseCode)
+            if (courseEntity == null) {
+                ctx.send(StatusCode.NOT_FOUND)
+                return@before
+            }
+
+            ctx.attributes["courseId"] = courseEntity.id
+        }
+
+        mvc(CourseController::class)
+    }
 })
 
 fun main(args: Array<String>) {

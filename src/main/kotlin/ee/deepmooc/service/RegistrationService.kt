@@ -8,14 +8,12 @@ import ee.deepmooc.model.Group
 import ee.deepmooc.model.GroupRegistrationEntity
 import ee.deepmooc.model.User
 import ee.deepmooc.repository.CourseRegistrationRepository
-import ee.deepmooc.repository.CourseRepository
 import ee.deepmooc.repository.GroupRegistrationRepository
 import ee.deepmooc.repository.UserRepository
 import javax.inject.Inject
 
 class RegistrationService @Inject constructor(
     private val userRepository: UserRepository,
-    private val courseRepository: CourseRepository,
     private val courseRegistrationRepository: CourseRegistrationRepository,
     private val groupRegistrationRepository: GroupRegistrationRepository
 ) {
@@ -38,73 +36,60 @@ class RegistrationService @Inject constructor(
         return courseRegistrations
     }
 
-    fun getRegisteredUsers(courseCode: String): List<CourseRegistration> {
-        val registrationsToUsers = userRepository.fetchUsersRegisteredToCourse(courseCode)
+    fun getRegisteredUsers(courseId: Long): List<CourseRegistration> {
+        val registrationsToUsers = userRepository.fetchUsersRegisteredToCourse(courseId)
 
         return registrationsToUsers
             .map { CourseRegistration(it.key, User(it.value!!)) }
     }
 
-    fun getRegisteredStudents(courseCode: String): List<CourseRegistration> {
-        val registrationsToUsers = userRepository.fetchUsersRegisteredToCourse(courseCode)
+    fun getRegisteredStudents(courseId: Long): List<CourseRegistration> {
+        val registrationsToUsers = userRepository.fetchUsersRegisteredToCourse(courseId)
 
         return registrationsToUsers
             .filter { it.key.accessLevel == AccessLevel.STUDENT }
             .map { CourseRegistration(it.key, User(it.value!!)) }
     }
 
-    fun registerUserToCourse(
-        userId: Long,
-        courseId: Long,
-        accessLevel: AccessLevel,
-        groupIds: Collection<Long> = setOf()
-    ) {
-        val courseRegistrationEntity = courseRegistrationRepository.save(
+    fun addUsersToCourse(userIds: Collection<Long>, courseId: Long, accessLevel: AccessLevel) {
+        val courseRegistrationEntities = userIds.map {
             CourseRegistrationEntity(
-                userId = userId,
+                userId = it,
                 courseId = courseId,
                 accessLevel = accessLevel
             )
-        )
-
-        if (groupIds.isNotEmpty()) {
-            val groupRegistrationEntities = groupIds.map {
-                GroupRegistrationEntity(
-                    groupId = it,
-                    courseRegistrationId = courseRegistrationEntity.id
-                )
-            }
-
-            groupRegistrationRepository.save(groupRegistrationEntities)
         }
+
+        courseRegistrationRepository.save(courseRegistrationEntities)
     }
 
-    fun removeUserFromCourse(userId: Long, courseId: Long) {
-        val courseRegistrationEntity = courseRegistrationRepository.fetchByUserIdAndCourseId(userId, courseId)
+    fun removeUsersFromCourse(userIds: List<Long>, courseId: Long) {
+        val courseRegistrationEntityIds =
+            courseRegistrationRepository.findByUserIdsAndCourseId(userIds, courseId).map { it.id }
 
-        groupRegistrationRepository.deleteByCourseRegistrationId(courseRegistrationEntity.id)
+        groupRegistrationRepository.deleteByCourseRegistrationIds(courseRegistrationEntityIds)
 
-        courseRegistrationRepository.deleteById(courseRegistrationEntity.id)
+        courseRegistrationRepository.deleteByIds(courseRegistrationEntityIds)
     }
 
-    fun addUserToGroup(userId: Long, groupId: Long) {
-        val courseEntity = courseRepository.fetchByGroupId(groupId)
+    fun addUsersToGroup(userIds: List<Long>, groupId: Long) {
+        val courseRegistrationEntities = courseRegistrationRepository.findByUserIdsAndGroupId(userIds, groupId)
 
-        val courseRegistrationEntity = courseRegistrationRepository.fetchByUserIdAndCourseId(userId, courseEntity.id)
+        val groupRegistrationEntities = courseRegistrationEntities.map {
+            GroupRegistrationEntity(
+                groupId = groupId,
+                courseRegistrationId = it.id
+            )
+        }
 
-        val groupRegistrationEntity = GroupRegistrationEntity(
-            groupId = groupId,
-            courseRegistrationId = courseRegistrationEntity.id
-        )
-
-        groupRegistrationRepository.save(groupRegistrationEntity)
+        groupRegistrationRepository.save(groupRegistrationEntities)
     }
 
-    fun removeUserFromGroup(userId: Long, groupId: Long) {
-        val courseEntity = courseRepository.fetchByGroupId(groupId)
+    fun removeUsersFromGroup(userIds: List<Long>, groupId: Long) {
+        val courseRegistrationEntities = courseRegistrationRepository.findByUserIdsAndGroupId(userIds, groupId)
 
-        val courseRegistrationEntity = courseRegistrationRepository.fetchByUserIdAndCourseId(userId, courseEntity.id)
-
-        groupRegistrationRepository.deleteByGroupIdAndCourseRegistrationId(groupId, courseRegistrationEntity.id)
+        groupRegistrationRepository.deleteByGroupIdAndCourseRegistrationIds(
+            groupId,
+            courseRegistrationEntities.map { it.id })
     }
 }

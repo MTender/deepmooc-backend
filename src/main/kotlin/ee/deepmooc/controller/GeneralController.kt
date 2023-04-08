@@ -1,7 +1,9 @@
 package ee.deepmooc.controller
 
 import ee.deepmooc.auth.getUid
+import ee.deepmooc.model.AccessLevel
 import ee.deepmooc.model.CourseRegistration
+import ee.deepmooc.model.MinimumAccessLevel
 import ee.deepmooc.model.User
 import ee.deepmooc.service.RegistrationService
 import ee.deepmooc.service.UserService
@@ -20,12 +22,14 @@ class GeneralController @Inject constructor(
 ) {
 
     @GET("/my-registrations")
+    @MinimumAccessLevel(AccessLevel.STUDENT)
     @Produces(MediaType.JSON)
     fun myRegistrations(@ContextParam("user") profile: CommonProfile): List<CourseRegistration> {
         return registrationService.getRegistrationsOfUser(profile.getUid())
     }
 
     @GET("/me")
+    @MinimumAccessLevel(AccessLevel.STUDENT)
     @Produces(MediaType.JSON)
     fun me(@ContextParam("user") profile: CommonProfile): User {
         return userService.getUser(profile.getUid())

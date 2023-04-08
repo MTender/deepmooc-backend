@@ -22,5 +22,6 @@ class RepositoryUtils {
         val C_JOIN_CR = on { c.id eq cr.courseId }
         val CR_JOIN_GR = on { cr.id eq gr.courseRegistrationId }
         val G_JOIN_GR = on { g.id eq gr.groupId }
+        val C_JOIN_G = on { c.id eq g.courseId }
     }
 }

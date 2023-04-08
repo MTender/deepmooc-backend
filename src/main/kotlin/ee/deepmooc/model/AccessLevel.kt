@@ -7,4 +7,4 @@ enum class AccessLevel {
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class RequiredAccessLevel(val value: AccessLevel)
+annotation class MinimumAccessLevel(val value: AccessLevel)

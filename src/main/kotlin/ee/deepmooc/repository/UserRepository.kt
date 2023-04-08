@@ -29,16 +29,16 @@ class UserRepository @Inject constructor(
         )
     }
 
-    fun fetchUsersRegisteredToCourse(courseCode: String): Map<CourseRegistrationEntity, UserEntity?> {
+    fun fetchUsersRegisteredToCourse(courseId: Long): Map<CourseRegistrationEntity, UserEntity?> {
         val store = db.runQuery(
             QueryDsl.from(c)
                 .leftJoin(cr, C_JOIN_CR)
                 .leftJoin(u, U_JOIN_CR)
-                .where { c.code eq courseCode }
+                .where { c.id eq courseId }
                 .includeAll()
         )
 
-        if (store[c].isEmpty()) throw IllegalArgumentException("No such course")
+        if (store[c].isEmpty()) throw NoSuchElementException("No such course")
 
         return store.oneToOne(cr, u)
     }
