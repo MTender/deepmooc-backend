@@ -1,16 +1,6 @@
 package ee.deepmooc
 
-import ee.deepmooc.model.AccessLevel
-import ee.deepmooc.model.CourseEntity
-import ee.deepmooc.model.CourseRegistrationEntity
-import ee.deepmooc.model.GroupEntity
-import ee.deepmooc.model.GroupRegistrationEntity
-import ee.deepmooc.model.UserEntity
-import ee.deepmooc.model.courseRegistrations
-import ee.deepmooc.model.courses
-import ee.deepmooc.model.groupRegistrations
-import ee.deepmooc.model.groups
-import ee.deepmooc.model.users
+import ee.deepmooc.model.*
 import io.jooby.Jooby
 import io.jooby.JoobyTest
 import io.jooby.require
@@ -23,22 +13,48 @@ import org.komapper.jdbc.JdbcDatabase
 @JoobyTest(App::class)
 open class IntegrationTest {
 
-    protected val testUsers: MutableList<UserEntity> = mutableListOf()
-    protected val testCourses: MutableList<CourseEntity> = mutableListOf()
-    protected val testGroups: MutableList<GroupEntity> = mutableListOf()
-    protected val testCourseRegistrations: MutableList<CourseRegistrationEntity> = mutableListOf()
+    companion object {
 
-    private val u = Meta.users
-    private val cr = Meta.courseRegistrations
-    private val c = Meta.courses
-    private val gr = Meta.groupRegistrations
-    private val g = Meta.groups
+        @JvmStatic
+        protected val client = OkHttpClient()
 
-    @BeforeAll
-    fun generateTestData(application: Jooby) {
-        val db = application.require(JdbcDatabase::class)
+        @JvmStatic
+        protected val testUsers: MutableList<UserEntity> = mutableListOf()
 
-        db.withTransaction {
+        @JvmStatic
+        protected val testCourses: MutableList<CourseEntity> = mutableListOf()
+
+        @JvmStatic
+        protected val testGroups: MutableList<GroupEntity> = mutableListOf()
+
+        @JvmStatic
+        protected val testCourseRegistrations: MutableList<CourseRegistrationEntity> = mutableListOf()
+
+        @JvmStatic
+        protected val testGroupRegistrations: MutableList<GroupRegistrationEntity> = mutableListOf()
+
+        @JvmStatic
+        protected val u = Meta.users
+
+        @JvmStatic
+        protected val cr = Meta.courseRegistrations
+
+        @JvmStatic
+        protected val c = Meta.courses
+
+        @JvmStatic
+        protected val gr = Meta.groupRegistrations
+
+        @JvmStatic
+        protected val g = Meta.groups
+
+        @BeforeAll
+        @JvmStatic
+        fun generateTestData(application: Jooby) {
+            val db = application.require(JdbcDatabase::class)
+
+            // users
+
             db.runQuery(
                 QueryDsl.insert(u).onDuplicateKeyIgnore(u.username)
                     .multiple(
@@ -48,7 +64,6 @@ open class IntegrationTest {
                     )
             )
 
-            testUsers.clear()
             testUsers.addAll(
                 db.runQuery(
                     QueryDsl.from(u)
@@ -59,6 +74,7 @@ open class IntegrationTest {
                 )
             )
 
+            // courses
 
             db.runQuery(
                 QueryDsl.insert(c).onDuplicateKeyIgnore(c.code)
@@ -68,7 +84,6 @@ open class IntegrationTest {
                     )
             )
 
-            testCourses.clear()
             testCourses.addAll(
                 db.runQuery(
                     QueryDsl.from(c)
@@ -79,6 +94,8 @@ open class IntegrationTest {
                 )
             )
 
+            // groups
+
             db.runQuery(
                 QueryDsl.insert(g).onDuplicateKeyIgnore(g.name, g.courseId)
                     .multiple(
@@ -88,7 +105,6 @@ open class IntegrationTest {
                     )
             )
 
-            testGroups.clear()
             testGroups.addAll(
                 db.runQuery(
                     QueryDsl.from(g)
@@ -98,6 +114,24 @@ open class IntegrationTest {
                         .orderBy(g.id)
                 )
             )
+
+            // delete registrations
+
+            db.runQuery(
+                QueryDsl.delete(gr)
+                    .where {
+                        gr.groupId inList testGroups.map { it.id }
+                    }
+            )
+
+            db.runQuery {
+                QueryDsl.delete(cr)
+                    .where {
+                        cr.userId inList testUsers.map { it.id }
+                    }
+            }
+
+            // create registrations
 
             db.runQuery(
                 QueryDsl.insert(cr).onDuplicateKeyIgnore(cr.userId, cr.courseId)
@@ -125,15 +159,11 @@ open class IntegrationTest {
                     )
             )
 
-            testCourseRegistrations.clear()
             testCourseRegistrations.addAll(
                 db.runQuery(
                     QueryDsl.from(cr)
                         .where {
                             cr.userId inList testUsers.map { it.id }
-                            or {
-                                cr.courseId inList testCourses.map { it.id }
-                            }
                         }
                         .orderBy(cr.id)
                 )
@@ -152,11 +182,16 @@ open class IntegrationTest {
                         )
                     )
             )
-        }
-    }
 
-    companion object {
-        @JvmStatic
-        protected val client = OkHttpClient()
+            testGroupRegistrations.addAll(
+                db.runQuery(
+                    QueryDsl.from(gr)
+                        .where {
+                            gr.courseRegistrationId inList testCourseRegistrations.map { it.id }
+                        }
+                        .orderBy(gr.id)
+                )
+            )
+        }
     }
 }
