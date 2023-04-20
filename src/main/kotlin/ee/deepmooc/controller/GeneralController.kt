@@ -21,11 +21,11 @@ class GeneralController @Inject constructor(
     private val registrationService: RegistrationService
 ) {
 
-    @GET("/my-registrations")
+    @GET("/my-courses")
     @MinimumAccessLevel(AccessLevel.STUDENT)
     @Produces(MediaType.JSON)
-    fun myRegistrations(@ContextParam("user") profile: CommonProfile): List<CourseRegistration> {
-        return registrationService.getRegistrationsOfUser(profile.getUid())
+    fun myCourses(@ContextParam("user") profile: CommonProfile): List<CourseRegistration> {
+        return registrationService.getCourseRegistrationsOfUser(profile.getUid())
     }
 
     @GET("/me")

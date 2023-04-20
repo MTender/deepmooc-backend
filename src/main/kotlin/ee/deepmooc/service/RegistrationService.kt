@@ -9,45 +9,49 @@ import ee.deepmooc.model.GroupRegistrationEntity
 import ee.deepmooc.model.User
 import ee.deepmooc.repository.CourseRegistrationRepository
 import ee.deepmooc.repository.GroupRegistrationRepository
+import ee.deepmooc.repository.GroupRepository
 import ee.deepmooc.repository.UserRepository
 import javax.inject.Inject
 
 class RegistrationService @Inject constructor(
     private val userRepository: UserRepository,
     private val courseRegistrationRepository: CourseRegistrationRepository,
-    private val groupRegistrationRepository: GroupRegistrationRepository
+    private val groupRegistrationRepository: GroupRegistrationRepository,
+    private val groupRepository: GroupRepository
 ) {
 
-    fun getRegistrationsOfUser(username: String): List<CourseRegistration> {
+    fun getCourseRegistrationsOfUser(username: String): List<CourseRegistration> {
         val userEntity = userRepository.fetchByUsername(username)
 
-        val registrationsToCoursesAndGroups =
-            courseRegistrationRepository.fetchWithCoursesAndGroupsByUserId(userEntity.id)
+        val registrationsToCourses = courseRegistrationRepository.fetchWithCourses(userEntity.id)
 
-        val courseRegistrations = registrationsToCoursesAndGroups
+        val courseRegistrations = registrationsToCourses
             .map { entry ->
                 CourseRegistration(
                     entity = entry.key,
-                    course = Course(entry.value.first),
-                    groups = entry.value.second.map { Group(it) }.toSet()
+                    course = Course(entry.value)
                 )
             }
 
         return courseRegistrations
     }
 
-    fun getRegisteredUsers(courseId: Long): List<CourseRegistration> {
-        val registrationsToUsers = userRepository.fetchUsersRegisteredToCourse(courseId)
+    fun getGroupsOfUser(username: String, courseId: Long): List<Group> {
+        val userEntity = userRepository.fetchByUsername(username)
 
-        return registrationsToUsers
-            .map { CourseRegistration(it.key, User(it.value!!)) }
+        return getGroupsOfUser(userEntity.id, courseId)
     }
 
-    fun getRegisteredStudents(courseId: Long): List<CourseRegistration> {
+    fun getGroupsOfUser(userId: Long, courseId: Long): List<Group> {
+        val groupEntities = groupRepository.findByUserIdAndCourseId(userId, courseId)
+
+        return groupEntities.map { Group(it) }
+    }
+
+    fun getRegistrations(courseId: Long): List<CourseRegistration> {
         val registrationsToUsers = userRepository.fetchUsersRegisteredToCourse(courseId)
 
         return registrationsToUsers
-            .filter { it.key.accessLevel == AccessLevel.STUDENT }
             .map { CourseRegistration(it.key, User(it.value!!)) }
     }
 
@@ -60,7 +64,7 @@ class RegistrationService @Inject constructor(
             )
         }
 
-        courseRegistrationRepository.save(courseRegistrationEntities)
+        courseRegistrationRepository.upsert(courseRegistrationEntities)
     }
 
     fun removeUsersFromCourse(userIds: List<Long>, courseId: Long) {

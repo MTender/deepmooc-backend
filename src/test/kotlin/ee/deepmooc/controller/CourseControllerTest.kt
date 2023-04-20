@@ -2,10 +2,10 @@ package ee.deepmooc.controller
 
 import ee.deepmooc.App
 import ee.deepmooc.IntegrationTest
-import ee.deepmooc.model.AccessLevel
-import ee.deepmooc.model.CourseRegistrationEntity
-import ee.deepmooc.model.GroupRegistrationEntity
+import ee.deepmooc.model.*
 import io.jooby.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -16,6 +16,7 @@ import org.komapper.jdbc.JdbcDatabase
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@ExperimentalSerializationApi
 @JoobyTest(App::class)
 class CourseControllerTest(
     private val serverPath: String,
@@ -23,31 +24,55 @@ class CourseControllerTest(
 ) : IntegrationTest() {
 
     @Test
-    fun testGetAllUsers() {
+    fun testGetMyGroups() {
+        // prep
+        val groups = testGroups.filter { it.name in setOf("test_I_1", "test_I_3") }.map { Group(it) }.toSet()
+
         // test
         val req = Request.Builder()
-            .header(AUTHENTICATION_HEADER, "test1")
-            .url(getUrl("/users"))
+            .header(AUTHENTICATION_HEADER, "test2")
+            .url(getUrl("/my-groups"))
             .build()
 
         client.newCall(req).execute().use { rsp ->
             assertEquals(StatusCode.OK.value(), rsp.code)
             assertEquals(
-                "[" +
-                        "{\"user\":{\"id\":9,\"username\":\"test1\"},\"accessLevel\":\"TEACHER\"}," +
-                        "{\"user\":{\"id\":10,\"username\":\"test2\"},\"accessLevel\":\"STUDENT\"}" +
-                        "]",
-                rsp.body!!.string()
+                groups,
+                format.decodeFromString<Set<Group>>(rsp.body!!.string())
             )
         }
     }
 
     @Test
-    fun testGetAllUsersAsStudent() {
+    fun testGetGroupsOfUser() {
+        // prep
+        val userEntity = testUsers.single { it.username == "test2" }
+        val groups = testGroups.filter { it.name in setOf("test_I_1", "test_I_3") }.map { Group(it) }.toSet()
+
+        // test
+        val req = Request.Builder()
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/groups/${userEntity.id}"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                groups,
+                format.decodeFromString<Set<Group>>(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testGetGroupsOfUserAsStudent() {
+        // prep
+        val userEntity = testUsers.single { it.username == "test2" }
+
         // test
         val req = Request.Builder()
             .header("Authentication", "test2")
-            .url(getUrl("/users"))
+            .url(getUrl("/groups/${userEntity.id}"))
             .build()
 
         client.newCall(req).execute().use { rsp ->
@@ -56,7 +81,50 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testGetAllStudents() {
+    fun testGetRegistrations() {
+        // prep
+        val userIds = testUsers.filter { it.username in setOf("test1", "test2") }.map { it.id }
+        val registrations = testCourseRegistrations.filter { it.userId in userIds && it.courseId == getTestCourseId() }
+            .map { registration ->
+                CourseRegistration(
+                    registration,
+                    User(testUsers.single { it.id == registration.userId })
+                )
+            }.toSet()
+
+        // test
+        val req = Request.Builder()
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/registrations"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                registrations,
+                format.decodeFromString<Set<CourseRegistration>>(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testGetRegistrationsAsStudent() {
+        // test
+        val req = Request.Builder()
+            .header("Authentication", "test2")
+            .url(getUrl("/registrations"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.FORBIDDEN.value(), rsp.code)
+        }
+    }
+
+    @Test
+    fun testGetStudents() {
+        // prep
+        val users = testUsers.filter { it.username == "test2" }.map { User(it) }.toSet()
+
         // test
         val req = Request.Builder()
             .header("Authentication", "test1")
@@ -65,12 +133,9 @@ class CourseControllerTest(
 
         client.newCall(req).execute().use { rsp ->
             assertEquals(StatusCode.OK.value(), rsp.code)
-            val body = rsp.body!!.string()
             assertEquals(
-                "[" +
-                        "{\"user\":{\"id\":10,\"username\":\"test2\"},\"accessLevel\":\"STUDENT\"}" +
-                        "]",
-                body
+                users,
+                format.decodeFromString<Set<User>>(rsp.body!!.string())
             )
         }
     }
@@ -93,12 +158,12 @@ class CourseControllerTest(
         val userIds = setOf(testUsers.single { it.username == "test3" }.id)
 
         // test
-        val json = Json.encodeToString(CourseController.UserIdsInput(userIds))
+        val json = Json.encodeToString(CourseController.UserIdsAndAccessLevelInput(userIds, AccessLevel.STUDENT))
 
         val req = Request.Builder()
             .post(json.toRequestBody(MediaType.JSON.toMediaType()))
             .header(AUTHENTICATION_HEADER, "test1")
-            .url(getUrl("/add-students-to-course"))
+            .url(getUrl("/add-to-course"))
             .build()
 
         client.newCall(req).execute().use { rsp ->
@@ -123,7 +188,7 @@ class CourseControllerTest(
         val req = Request.Builder()
             .post("".toRequestBody(MediaType.JSON.toMediaType()))
             .header(AUTHENTICATION_HEADER, "test2")
-            .url(getUrl("/add-students-to-course"))
+            .url(getUrl("/add-to-course"))
             .build()
 
         client.newCall(req).execute().use { rsp ->

@@ -4,16 +4,22 @@ import ee.deepmooc.model.*
 import io.jooby.Jooby
 import io.jooby.JoobyTest
 import io.jooby.require
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.BeforeAll
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.jdbc.JdbcDatabase
 
+@ExperimentalSerializationApi
 @JoobyTest(App::class)
 open class IntegrationTest {
 
     companion object {
+
+        @JvmStatic
+        protected val format = Json { explicitNulls = false }
 
         @JvmStatic
         protected val client = OkHttpClient()

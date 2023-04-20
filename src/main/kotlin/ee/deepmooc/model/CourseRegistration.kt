@@ -32,7 +32,7 @@ data class CourseRegistration(
     val groups: Set<Group>?
 ) {
 
-    constructor(entity: CourseRegistrationEntity, course: Course, groups: Set<Group>) : this(
+    constructor(entity: CourseRegistrationEntity, course: Course, groups: Set<Group>? = null) : this(
         null,
         course,
         entity.accessLevel,

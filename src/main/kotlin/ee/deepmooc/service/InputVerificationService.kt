@@ -10,7 +10,7 @@ class InputVerificationService @Inject constructor(
 ) {
 
     fun verifyGroupMatchesCourse(groupId: Long, courseId: Long) {
-        if (groupRepository.findByIdAndCourseCode(groupId, courseId) == null) {
+        if (groupRepository.findByIdAndCourseId(groupId, courseId) == null) {
             throw IllegalArgumentException("Group id does not match course code")
         }
     }
