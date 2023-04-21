@@ -1,7 +1,6 @@
 package ee.deepmooc.auth
 
 import ee.deepmooc.model.AccessLevel
-import ee.deepmooc.model.MinimumAccessLevel
 import ee.deepmooc.service.AuthService
 import io.jooby.pac4j.Pac4jContext
 import org.pac4j.core.authorization.authorizer.Authorizer

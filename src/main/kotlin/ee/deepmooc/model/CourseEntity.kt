@@ -1,6 +1,5 @@
 package ee.deepmooc.model
 
-import kotlinx.serialization.Serializable
 import org.komapper.annotation.KomapperAutoIncrement
 import org.komapper.annotation.KomapperEntity
 import org.komapper.annotation.KomapperId
@@ -18,21 +17,3 @@ data class CourseEntity(
 
     val code: String
 )
-
-@Serializable
-data class Course(
-    val id: Long,
-    val name: String,
-    val code: String,
-    val courseRegistrations: Set<CourseRegistration>?,
-    val groups: Set<Group>?
-) {
-
-    constructor(entity: CourseEntity, groups: Set<Group>? = null) : this(
-        entity.id,
-        entity.name,
-        entity.code,
-        null,
-        groups
-    )
-}

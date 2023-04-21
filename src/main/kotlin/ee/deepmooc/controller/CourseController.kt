@@ -1,7 +1,11 @@
 package ee.deepmooc.controller
 
+import ee.deepmooc.auth.MinimumAccessLevel
 import ee.deepmooc.auth.getUid
 import ee.deepmooc.controller.CourseController.Companion.COURSE_CODE_PATH_PARAM
+import ee.deepmooc.dto.Group
+import ee.deepmooc.dto.RegisteredUser
+import ee.deepmooc.dto.User
 import ee.deepmooc.model.*
 import ee.deepmooc.service.InputVerificationService
 import ee.deepmooc.service.RegistrationService
@@ -30,18 +34,18 @@ class CourseController @Inject constructor(
         return registrationService.getGroupsOfUser(userId, courseId)
     }
 
-    @GET("/registrations")
+    @GET("/registered-users")
     @Produces(MediaType.JSON)
-    fun registrations(@ContextParam courseId: Long): List<CourseRegistration> {
-        return registrationService.getRegistrations(courseId)
+    fun registrations(@ContextParam courseId: Long): List<RegisteredUser> {
+        return registrationService.getRegisteredUsers(courseId)
     }
 
     @GET("/students")
     @Produces(MediaType.JSON)
     fun students(@ContextParam courseId: Long): List<User> {
-        return registrationService.getRegistrations(courseId)
+        return registrationService.getRegisteredUsers(courseId)
             .filter { it.accessLevel == AccessLevel.STUDENT }
-            .map { it.user!! }
+            .map { User(it) }
     }
 
     @POST("/add-to-course")

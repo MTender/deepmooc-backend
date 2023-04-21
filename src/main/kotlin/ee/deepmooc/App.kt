@@ -11,6 +11,7 @@ import ee.deepmooc.modules.SamlAuthModule
 import ee.deepmooc.modules.TestAuthModule
 import ee.deepmooc.repository.CourseRepository
 import io.jooby.Kooby
+import io.jooby.OpenAPIModule
 import io.jooby.StatusCode
 import io.jooby.di.GuiceModule
 import io.jooby.hikari.HikariModule
@@ -23,6 +24,8 @@ class App : Kooby({
     install(HikariModule())
     install(KomapperModule())
     decorator(KomapperTransactionalRequest())
+
+    install(OpenAPIModule())
 
     mvc(ServiceProviderMetadataController::class)
 

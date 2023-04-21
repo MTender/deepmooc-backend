@@ -1,10 +1,10 @@
 package ee.deepmooc.controller
 
+import ee.deepmooc.auth.MinimumAccessLevel
 import ee.deepmooc.auth.getUid
+import ee.deepmooc.dto.CourseRegistration
+import ee.deepmooc.dto.User
 import ee.deepmooc.model.AccessLevel
-import ee.deepmooc.model.CourseRegistration
-import ee.deepmooc.model.MinimumAccessLevel
-import ee.deepmooc.model.User
 import ee.deepmooc.service.RegistrationService
 import ee.deepmooc.service.UserService
 import io.jooby.MediaType

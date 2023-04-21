@@ -2,6 +2,9 @@ package ee.deepmooc.controller
 
 import ee.deepmooc.App
 import ee.deepmooc.IntegrationTest
+import ee.deepmooc.dto.Group
+import ee.deepmooc.dto.RegisteredUser
+import ee.deepmooc.dto.User
 import ee.deepmooc.model.*
 import io.jooby.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -86,23 +89,23 @@ class CourseControllerTest(
         val userIds = testUsers.filter { it.username in setOf("test1", "test2") }.map { it.id }
         val registrations = testCourseRegistrations.filter { it.userId in userIds && it.courseId == getTestCourseId() }
             .map { registration ->
-                CourseRegistration(
-                    registration,
-                    User(testUsers.single { it.id == registration.userId })
+                RegisteredUser(
+                    testUsers.single { it.id == registration.userId },
+                    registration.accessLevel
                 )
             }.toSet()
 
         // test
         val req = Request.Builder()
             .header(AUTHENTICATION_HEADER, "test1")
-            .url(getUrl("/registrations"))
+            .url(getUrl("/registered-users"))
             .build()
 
         client.newCall(req).execute().use { rsp ->
             assertEquals(StatusCode.OK.value(), rsp.code)
             assertEquals(
                 registrations,
-                format.decodeFromString<Set<CourseRegistration>>(rsp.body!!.string())
+                format.decodeFromString<Set<RegisteredUser>>(rsp.body!!.string())
             )
         }
     }
@@ -112,7 +115,7 @@ class CourseControllerTest(
         // test
         val req = Request.Builder()
             .header("Authentication", "test2")
-            .url(getUrl("/registrations"))
+            .url(getUrl("/registered-users"))
             .build()
 
         client.newCall(req).execute().use { rsp ->

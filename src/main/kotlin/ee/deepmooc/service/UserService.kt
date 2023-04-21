@@ -1,6 +1,6 @@
 package ee.deepmooc.service
 
-import ee.deepmooc.model.User
+import ee.deepmooc.dto.User
 import ee.deepmooc.model.UserEntity
 import ee.deepmooc.repository.UserRepository
 import javax.inject.Inject

@@ -52,6 +52,7 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+    implementation("io.jooby:jooby-swagger-ui:$joobyVersion")
 
     testImplementation(kotlin("test-junit5", kotlinVersion))
     testImplementation("io.jooby:jooby-test:$joobyVersion")

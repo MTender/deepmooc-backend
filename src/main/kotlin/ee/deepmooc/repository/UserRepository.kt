@@ -29,7 +29,7 @@ class UserRepository @Inject constructor(
         )
     }
 
-    fun fetchUsersRegisteredToCourse(courseId: Long): Map<CourseRegistrationEntity, UserEntity?> {
+    fun fetchUsersRegisteredToCourse(courseId: Long): Map<CourseRegistrationEntity, UserEntity> {
         val store = db.runQuery(
             QueryDsl.from(c)
                 .leftJoin(cr, C_JOIN_CR)
@@ -40,7 +40,8 @@ class UserRepository @Inject constructor(
 
         if (store[c].isEmpty()) throw NoSuchElementException("No such course")
 
-        return store.oneToOne(cr, u)
+        @Suppress("UNCHECKED_CAST")
+        return store.oneToOne(cr, u) as Map<CourseRegistrationEntity, UserEntity>
     }
 
     fun save(userEntity: UserEntity): UserEntity {
