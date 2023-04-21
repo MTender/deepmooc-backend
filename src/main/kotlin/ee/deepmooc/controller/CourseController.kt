@@ -50,8 +50,12 @@ class CourseController @Inject constructor(
 
     @POST("/add-to-course")
     @Consumes(MediaType.JSON)
-    fun addToCourse(@ContextParam courseId: Long, body: UserIdsAndAccessLevelInput) {
+    fun addToCourse(@ContextParam courseId: Long, body: UserIdsAndAccessLevelInput): List<RegisteredUser> {
         registrationService.addUsersToCourse(body.userIds, courseId, body.accessLevel)
+
+        return registrationService.getRegisteredUsers(courseId).filter {
+            it.id in body.userIds
+        }
     }
 
     @DELETE("/remove-from-course")
@@ -62,13 +66,17 @@ class CourseController @Inject constructor(
 
     @POST("/add-to-group")
     @Consumes(MediaType.JSON)
-    fun addStudentsToGroup(@ContextParam courseId: Long, body: UserIdsAndGroupIdInput) {
+    fun addStudentsToGroup(@ContextParam courseId: Long, body: UserIdsAndGroupIdInput): List<User> {
         val userIdsList = body.userIds.toList()
 
         verificationService.verifyGroupMatchesCourse(body.groupId, courseId)
         verificationService.verifyUsersRegisteredToCourse(userIdsList, courseId)
 
         registrationService.addUsersToGroup(userIdsList, body.groupId)
+
+        return registrationService.getMembersOfGroup(body.groupId).filter {
+            it.id in body.userIds
+        }
     }
 
     @DELETE("/remove-from-group")

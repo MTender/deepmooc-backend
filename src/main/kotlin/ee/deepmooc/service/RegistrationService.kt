@@ -3,6 +3,7 @@ package ee.deepmooc.service
 import ee.deepmooc.dto.CourseRegistration
 import ee.deepmooc.dto.Group
 import ee.deepmooc.dto.RegisteredUser
+import ee.deepmooc.dto.User
 import ee.deepmooc.model.AccessLevel
 import ee.deepmooc.model.CourseRegistrationEntity
 import ee.deepmooc.model.GroupRegistrationEntity
@@ -57,6 +58,12 @@ class RegistrationService @Inject constructor(
                     accessLevel = it.key.accessLevel
                 )
             }
+    }
+
+    fun getMembersOfGroup(groupId: Long): List<User> {
+        val userEntities = userRepository.findUsersInGroup(groupId)
+
+        return userEntities.map { User(it) }
     }
 
     fun addUsersToCourse(userIds: Collection<Long>, courseId: Long, accessLevel: AccessLevel) {
