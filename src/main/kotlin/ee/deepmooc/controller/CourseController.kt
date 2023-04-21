@@ -9,13 +9,15 @@ import ee.deepmooc.dto.User
 import ee.deepmooc.model.*
 import ee.deepmooc.service.InputVerificationService
 import ee.deepmooc.service.RegistrationService
-import io.jooby.MediaType
 import io.jooby.annotations.*
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.serialization.Serializable
 import org.pac4j.core.profile.CommonProfile
 import javax.inject.Inject
 
 @Path("/api/{$COURSE_CODE_PATH_PARAM}")
+@Tag(name = "Course specific")
 class CourseController @Inject constructor(
     private val registrationService: RegistrationService,
     private val verificationService: InputVerificationService
@@ -23,25 +25,21 @@ class CourseController @Inject constructor(
 
     @GET("/my-groups")
     @MinimumAccessLevel(AccessLevel.STUDENT)
-    @Produces(MediaType.JSON)
     fun myGroups(@ContextParam courseId: Long, @ContextParam("user") profile: CommonProfile): List<Group> {
         return registrationService.getGroupsOfUser(profile.getUid(), courseId)
     }
 
     @GET("/groups/{userId}")
-    @Produces(MediaType.JSON)
     fun groupsOfUser(@ContextParam courseId: Long, @PathParam("userId") userId: Long): List<Group> {
         return registrationService.getGroupsOfUser(userId, courseId)
     }
 
     @GET("/registered-users")
-    @Produces(MediaType.JSON)
     fun registrations(@ContextParam courseId: Long): List<RegisteredUser> {
         return registrationService.getRegisteredUsers(courseId)
     }
 
     @GET("/students")
-    @Produces(MediaType.JSON)
     fun students(@ContextParam courseId: Long): List<User> {
         return registrationService.getRegisteredUsers(courseId)
             .filter { it.accessLevel == AccessLevel.STUDENT }
@@ -49,7 +47,6 @@ class CourseController @Inject constructor(
     }
 
     @POST("/add-to-course")
-    @Consumes(MediaType.JSON)
     fun addToCourse(@ContextParam courseId: Long, body: UserIdsAndAccessLevelInput): List<RegisteredUser> {
         registrationService.addUsersToCourse(body.userIds, courseId, body.accessLevel)
 
@@ -59,13 +56,12 @@ class CourseController @Inject constructor(
     }
 
     @DELETE("/remove-from-course")
-    @Consumes(MediaType.JSON)
+    @ApiResponse(responseCode = "204")
     fun removeStudentsFromCourse(@ContextParam courseId: Long, body: UserIdsInput) {
         registrationService.removeUsersFromCourse(body.userIds.toList(), courseId)
     }
 
     @POST("/add-to-group")
-    @Consumes(MediaType.JSON)
     fun addStudentsToGroup(@ContextParam courseId: Long, body: UserIdsAndGroupIdInput): List<User> {
         val userIdsList = body.userIds.toList()
 
@@ -80,7 +76,7 @@ class CourseController @Inject constructor(
     }
 
     @DELETE("/remove-from-group")
-    @Consumes(MediaType.JSON)
+    @ApiResponse(responseCode = "204")
     fun removeStudentsFromGroup(@ContextParam courseId: Long, body: UserIdsAndGroupIdInput) {
         val userIdsList = body.userIds.toList()
 

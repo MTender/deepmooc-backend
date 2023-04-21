@@ -17,7 +17,15 @@ import io.jooby.di.GuiceModule
 import io.jooby.hikari.HikariModule
 import io.jooby.require
 import io.jooby.runApp
+import io.swagger.v3.oas.annotations.OpenAPIDefinition
+import io.swagger.v3.oas.annotations.info.Info
 
+@OpenAPIDefinition(
+    info = Info(
+        title = "DeepMOOC API",
+        description = "This is the documentation for the DeepMOOC backend web API"
+    )
+)
 class App : Kooby({
     install(KotlinxSerializationModule())
     install(GuiceModule())
