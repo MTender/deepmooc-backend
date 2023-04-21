@@ -171,6 +171,10 @@ class CourseControllerTest(
 
         client.newCall(req).execute().use { rsp ->
             assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                testUsers.filter { it.id in userIds }.map { RegisteredUser(it, AccessLevel.STUDENT) }.toSet(),
+                format.decodeFromString<Set<RegisteredUser>>(rsp.body!!.string())
+            )
         }
 
         // cleanup
@@ -260,6 +264,10 @@ class CourseControllerTest(
 
         client.newCall(req).execute().use { rsp ->
             assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                testUsers.filter { it.id in userIds }.map { User(it) }.toSet(),
+                format.decodeFromString<Set<User>>(rsp.body!!.string())
+            )
         }
 
         // cleanup
