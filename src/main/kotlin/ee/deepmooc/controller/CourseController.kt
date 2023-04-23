@@ -25,29 +25,39 @@ class CourseController @Inject constructor(
 
     @GET("/my-groups")
     @MinimumAccessLevel(AccessLevel.STUDENT)
-    fun myGroups(@ContextParam courseId: Long, @ContextParam("user") profile: CommonProfile): List<Group> {
+    fun myGroups(@PathParam courseCode: String, @ContextParam("user") profile: CommonProfile): List<Group> {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         return registrationService.getGroupsOfUser(profile.getUid(), courseId)
     }
 
     @GET("/groups/{userId}")
-    fun groupsOfUser(@ContextParam courseId: Long, @PathParam("userId") userId: Long): List<Group> {
+    fun groupsOfUser(@PathParam courseCode: String, @PathParam userId: Long): List<Group> {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         return registrationService.getGroupsOfUser(userId, courseId)
     }
 
     @GET("/registered-users")
-    fun registrations(@ContextParam courseId: Long): List<RegisteredUser> {
+    fun registrations(@PathParam courseCode: String): List<RegisteredUser> {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         return registrationService.getRegisteredUsers(courseId)
     }
 
     @GET("/students")
-    fun students(@ContextParam courseId: Long): List<User> {
+    fun students(@PathParam courseCode: String): List<User> {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         return registrationService.getRegisteredUsers(courseId)
             .filter { it.accessLevel == AccessLevel.STUDENT }
             .map { User(it) }
     }
 
     @POST("/add-to-course")
-    fun addToCourse(@ContextParam courseId: Long, body: UserIdsAndAccessLevelInput): List<RegisteredUser> {
+    fun addToCourse(@PathParam courseCode: String, body: UserIdsAndAccessLevelInput): List<RegisteredUser> {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         registrationService.addUsersToCourse(body.userIds, courseId, body.accessLevel)
 
         return registrationService.getRegisteredUsers(courseId).filter {
@@ -57,12 +67,16 @@ class CourseController @Inject constructor(
 
     @DELETE("/remove-from-course")
     @ApiResponse(responseCode = "204")
-    fun removeStudentsFromCourse(@ContextParam courseId: Long, body: UserIdsInput) {
+    fun removeStudentsFromCourse(@PathParam courseCode: String, body: UserIdsInput) {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         registrationService.removeUsersFromCourse(body.userIds.toList(), courseId)
     }
 
     @POST("/add-to-group")
-    fun addStudentsToGroup(@ContextParam courseId: Long, body: UserIdsAndGroupIdInput): List<User> {
+    fun addStudentsToGroup(@PathParam courseCode: String, body: UserIdsAndGroupIdInput): List<User> {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         val userIdsList = body.userIds.toList()
 
         verificationService.verifyGroupMatchesCourse(body.groupId, courseId)
@@ -77,7 +91,9 @@ class CourseController @Inject constructor(
 
     @DELETE("/remove-from-group")
     @ApiResponse(responseCode = "204")
-    fun removeStudentsFromGroup(@ContextParam courseId: Long, body: UserIdsAndGroupIdInput) {
+    fun removeStudentsFromGroup(@PathParam courseCode: String, body: UserIdsAndGroupIdInput) {
+        val courseId = verificationService.verifyCourseCode(courseCode)
+
         val userIdsList = body.userIds.toList()
 
         verificationService.verifyGroupMatchesCourse(body.groupId, courseId)
