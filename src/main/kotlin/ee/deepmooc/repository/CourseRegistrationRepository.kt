@@ -57,7 +57,7 @@ class CourseRegistrationRepository @Inject constructor(
 
     fun upsert(courseRegistrationEntities: List<CourseRegistrationEntity>) {
         db.runQuery(
-            QueryDsl.insert(cr).onDuplicateKeyUpdate()
+            QueryDsl.insert(cr).onDuplicateKeyUpdate(cr.userId, cr.courseId)
                 .multiple(courseRegistrationEntities)
         )
     }

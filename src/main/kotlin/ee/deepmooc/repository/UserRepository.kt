@@ -19,6 +19,13 @@ class UserRepository @Inject constructor(
     private val c = Meta.courses
     private val gr = Meta.groupRegistrations
 
+    fun findUsers(userIds: List<Long>): List<UserEntity> {
+        return db.runQuery(
+            QueryDsl.from(u)
+                .where { u.id inList userIds }
+        )
+    }
+
     fun fetchByUsername(username: String): UserEntity {
         return db.runQuery(
             QueryDsl.from(u)

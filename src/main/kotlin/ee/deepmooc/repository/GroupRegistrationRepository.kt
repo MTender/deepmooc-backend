@@ -15,7 +15,7 @@ class GroupRegistrationRepository @Inject constructor(
 
     fun save(groupRegistrationEntities: List<GroupRegistrationEntity>) {
         db.runQuery(
-            QueryDsl.insert(gr).onDuplicateKeyIgnore()
+            QueryDsl.insert(gr).onDuplicateKeyIgnore(gr.courseRegistrationId, gr.groupId)
                 .multiple(groupRegistrationEntities)
         )
     }

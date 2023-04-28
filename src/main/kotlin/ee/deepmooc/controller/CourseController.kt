@@ -58,6 +58,8 @@ class CourseController @Inject constructor(
     fun addToCourse(@PathParam courseCode: String, body: UserIdsAndAccessLevelInput): List<RegisteredUser> {
         val courseId = verificationService.verifyCourseCode(courseCode)
 
+        verificationService.verifyUsersExist(body.userIds.toList())
+
         registrationService.addUsersToCourse(body.userIds, courseId, body.accessLevel)
 
         return registrationService.getRegisteredUsers(courseId).filter {
@@ -70,7 +72,11 @@ class CourseController @Inject constructor(
     fun removeStudentsFromCourse(@PathParam courseCode: String, body: UserIdsInput) {
         val courseId = verificationService.verifyCourseCode(courseCode)
 
-        registrationService.removeUsersFromCourse(body.userIds.toList(), courseId)
+        val userIdsList = body.userIds.toList()
+
+        verificationService.verifyUsersExist(userIdsList)
+
+        registrationService.removeUsersFromCourse(userIdsList, courseId)
     }
 
     @POST("/add-to-group")
@@ -79,6 +85,7 @@ class CourseController @Inject constructor(
 
         val userIdsList = body.userIds.toList()
 
+        verificationService.verifyUsersExist(userIdsList)
         verificationService.verifyGroupMatchesCourse(body.groupId, courseId)
         verificationService.verifyUsersRegisteredToCourse(userIdsList, courseId)
 
@@ -96,6 +103,7 @@ class CourseController @Inject constructor(
 
         val userIdsList = body.userIds.toList()
 
+        verificationService.verifyUsersExist(userIdsList)
         verificationService.verifyGroupMatchesCourse(body.groupId, courseId)
         verificationService.verifyUsersRegisteredToCourse(userIdsList, courseId)
 

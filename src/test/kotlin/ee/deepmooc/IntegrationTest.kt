@@ -156,7 +156,7 @@ open class IntegrationTest {
                             CourseRegistrationEntity(
                                 userId = testUsers[0].id,
                                 courseId = testCourses[1].id,
-                                accessLevel = AccessLevel.STUDENT
+                                accessLevel = AccessLevel.TEACHER
                             ),
                             CourseRegistrationEntity(
                                 userId = testUsers[1].id,

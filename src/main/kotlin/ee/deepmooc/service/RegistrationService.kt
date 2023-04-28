@@ -43,7 +43,7 @@ class RegistrationService @Inject constructor(
     }
 
     fun getGroupsOfUser(userId: Long, courseId: Long): List<Group> {
-        val groupEntities = groupRepository.findByUserIdAndCourseId(userId, courseId)
+        val groupEntities = groupRepository.fetchByUserIdAndCourseId(userId, courseId)
 
         return groupEntities.map { Group(it) }
     }

@@ -3,9 +3,11 @@ package ee.deepmooc.service
 import ee.deepmooc.repository.CourseRegistrationRepository
 import ee.deepmooc.repository.CourseRepository
 import ee.deepmooc.repository.GroupRepository
+import ee.deepmooc.repository.UserRepository
 import javax.inject.Inject
 
 class InputVerificationService @Inject constructor(
+    private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val courseRegistrationRepository: CourseRegistrationRepository,
     private val courseRepository: CourseRepository
@@ -29,5 +31,13 @@ class InputVerificationService @Inject constructor(
         val courseEntity = courseRepository.findByCode(courseCode) ?: throw IllegalArgumentException("No such course")
 
         return courseEntity.id
+    }
+
+    fun verifyUsersExist(userIds: List<Long>) {
+        val userEntities = userRepository.findUsers(userIds)
+
+        if (userIds.size != userEntities.size) {
+            throw IllegalArgumentException("At least one of the users does not exist")
+        }
     }
 }

@@ -20,6 +20,7 @@ class GeneralControllerTest(
 
     @Test
     fun testGetMyCourses() {
+        // prep
         val userEntity = testUsers.single { it.username == "test2" }
 
         val courseRegistrations = testCourseRegistrations.filter { it.userId == userEntity.id }.map { cre ->
@@ -29,11 +30,10 @@ class GeneralControllerTest(
             )
         }.toSet()
 
-        val url = getUrl("/my-courses")
-
+        // test
         val req = Request.Builder()
             .header("Authentication", userEntity.username)
-            .url(url)
+            .url(getUrl("/my-courses"))
             .build()
 
         client.newCall(req).execute().use { rsp ->
@@ -47,9 +47,11 @@ class GeneralControllerTest(
 
     @Test
     fun testGetMe() {
+        // prep
         val userEntity = testUsers.single { it.username == "test2" }
         val user = User(userEntity)
 
+        // test
         val req = Request.Builder()
             .header("Authentication", userEntity.username)
             .url(getUrl("/me"))

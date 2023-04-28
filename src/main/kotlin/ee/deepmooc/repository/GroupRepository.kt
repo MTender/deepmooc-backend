@@ -30,7 +30,7 @@ class GroupRepository @Inject constructor(
         )
     }
 
-    fun findByUserIdAndCourseId(userId: Long, courseId: Long): Set<GroupEntity> {
+    fun fetchByUserIdAndCourseId(userId: Long, courseId: Long): Set<GroupEntity> {
         val store = db.runQuery(
             QueryDsl.from(g)
                 .leftJoin(gr, G_JOIN_GR)
@@ -41,8 +41,10 @@ class GroupRepository @Inject constructor(
                         cr.userId eq userId
                     }
                 }
-                .include(g)
+                .include(g, cr)
         )
+
+        if (store[cr].isEmpty()) throw NoSuchElementException("No such user registered to the course")
 
         return store[g]
     }

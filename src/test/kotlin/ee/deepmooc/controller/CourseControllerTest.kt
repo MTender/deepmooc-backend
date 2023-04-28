@@ -17,6 +17,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.jdbc.JdbcDatabase
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 @ExperimentalSerializationApi
@@ -25,6 +26,19 @@ class CourseControllerTest(
     private val serverPath: String,
     private val application: Jooby
 ) : IntegrationTest() {
+
+    @Test
+    fun testNonexistentCourse() {
+        // test
+        val req = Request.Builder()
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/my-groups", "NO.SUCH.COURSE"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.FORBIDDEN.value(), rsp.code)
+        }
+    }
 
     @Test
     fun testGetMyGroups() {
@@ -80,6 +94,26 @@ class CourseControllerTest(
 
         client.newCall(req).execute().use { rsp ->
             assertEquals(StatusCode.FORBIDDEN.value(), rsp.code)
+        }
+    }
+
+    @Test
+    fun testGetGroupsOfNonexistentUser() {
+        // prep
+        val userId = 99
+
+        // test
+        val req = Request.Builder()
+            .header("Authentication", "test1")
+            .url(getUrl("/groups/$userId"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "No such user registered to the course",
+                getBadRequestMessage(rsp.body!!.string())
+            )
         }
     }
 
@@ -157,7 +191,8 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testAddStudentsToCourse() {
+    fun testAddStudentToCourse() {
+        // prep
         val userIds = setOf(testUsers.single { it.username == "test3" }.id)
 
         // test
@@ -190,7 +225,78 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testAddStudentsToCourseAsStudent() {
+    fun testAddTeacherToCourse() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test3" }.id)
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndAccessLevelInput(userIds, AccessLevel.TEACHER))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                testUsers.filter { it.id in userIds }.map { RegisteredUser(it, AccessLevel.TEACHER) }.toSet(),
+                format.decodeFromString<Set<RegisteredUser>>(rsp.body!!.string())
+            )
+        }
+
+        // cleanup
+        getDb().runQuery {
+            QueryDsl.delete(cr)
+                .where {
+                    cr.courseId eq getTestCourseId()
+                    and {
+                        cr.userId inList userIds.toList()
+                    }
+                }
+        }
+    }
+
+    @Test
+    fun testAddRegisteredUserToCourse() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test2" }.id)
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndAccessLevelInput(userIds, AccessLevel.TEACHER))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                testUsers.filter { it.id in userIds }.map { RegisteredUser(it, AccessLevel.TEACHER) }.toSet(),
+                format.decodeFromString<Set<RegisteredUser>>(rsp.body!!.string())
+            )
+        }
+
+        // cleanup
+        getDb().runQuery {
+            QueryDsl.update(cr)
+                .set {
+                    cr.accessLevel eq AccessLevel.STUDENT
+                }
+                .where {
+                    cr.courseId eq getTestCourseId()
+                    and {
+                        cr.userId inList userIds.toList()
+                    }
+                }
+        }
+    }
+
+    @Test
+    fun testAddStudentToCourseAsStudent() {
         // test
         val req = Request.Builder()
             .post("".toRequestBody(MediaType.JSON.toMediaType()))
@@ -203,9 +309,78 @@ class CourseControllerTest(
         }
     }
 
+    @Test
+    fun testAddNonexistentUserToCourse() {
+        // prep
+        val userIds = setOf(99L)
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndAccessLevelInput(userIds, AccessLevel.STUDENT))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "At least one of the users does not exist",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
 
     @Test
-    fun testRemoveFromCourse() {
+    fun testAddUserToCourseWithNonexistentAccessLevel() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test2" }.id)
+
+        // test
+        val json = "{\"userIds\":$userIds,\"accessLevel\":\"NONEXISTENT\"}"
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertContains(
+                getBadRequestMessage(rsp.body!!.string()),
+                "AccessLevel does not contain element with name &apos;NONEXISTENT&apos;"
+            )
+        }
+    }
+
+    @Test
+    fun testAddUserToCourseWithoutAccessLevel() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test2" }.id)
+
+        // test
+        val json = "{\"userIds\":$userIds}"
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertContains(
+                getBadRequestMessage(rsp.body!!.string()),
+                "Field &apos;accessLevel&apos; is required"
+            )
+        }
+    }
+
+    @Test
+    fun testRemoveStudentFromCourse() {
+        // prep
         val userIds = setOf(testUsers.single { it.username == "test3" }.id)
 
         // setup
@@ -235,7 +410,57 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testRemoveFromCourseAsStudent() {
+    fun testRemoveTeacherFromCourse() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test3" }.id)
+
+        // setup
+        getDb().runQuery {
+            QueryDsl.insert(cr)
+                .multiple(userIds.map {
+                    CourseRegistrationEntity(
+                        userId = it,
+                        courseId = getTestCourseId(),
+                        accessLevel = AccessLevel.TEACHER
+                    )
+                })
+        }
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsInput(userIds))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.NO_CONTENT.value(), rsp.code)
+        }
+    }
+
+    @Test
+    fun testRemoveUnregisteredUserFromCourse() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test3" }.id)
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsInput(userIds))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.NO_CONTENT.value(), rsp.code)
+        }
+    }
+
+    @Test
+    fun testRemoveUserFromCourseAsStudent() {
         // test
         val req = Request.Builder()
             .delete("".toRequestBody(MediaType.JSON.toMediaType()))
@@ -249,7 +474,31 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testAddStudentsToGroup() {
+    fun testRemoveNonexistentUserFromCourse() {
+        // prep
+        val userIds = setOf(99L)
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsInput(userIds))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-course"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "At least one of the users does not exist",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testAddUserToGroup() {
+        // prep
         val userIds = setOf(testUsers.single { it.username == "test2" }.id)
         val group = testGroups.single { it.name == "test_I_2" }
 
@@ -296,7 +545,31 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testAddStudentsToGroupAsStudent() {
+    fun testAddUserInGroupToGroup() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test2" }.id)
+        val group = testGroups.single { it.name == "test_I_1" }
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, group.id))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-group"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.OK.value(), rsp.code)
+            assertEquals(
+                testUsers.filter { it.id in userIds }.map { User(it) }.toSet(),
+                format.decodeFromString<Set<User>>(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testAddStudentToGroupAsStudent() {
         // test
         val req = Request.Builder()
             .post("".toRequestBody(MediaType.JSON.toMediaType()))
@@ -310,7 +583,80 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testRemoveFromGroup() {
+    fun testAddUnregisteredUserToGroup() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test3" }.id)
+        val group = testGroups.single { it.name == "test_I_2" }
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, group.id))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-group"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "At least one of the users is not registered to the course",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testAddUserToUnrelatedGroup() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test2" }.id)
+        val group = testGroups.single { it.name == "test_I_2" }
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, group.id))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-group", testCourses[1].code))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "Group id does not match course code",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testAddNonexistentUserToGroup() {
+        // prep
+        val userIds = setOf(99L)
+        val group = testGroups.single { it.name == "test_I_2" }
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, group.id))
+
+        val req = Request.Builder()
+            .post(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/add-to-group"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "At least one of the users does not exist",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testRemoveUserFromGroup() {
+        // prep
         val userIds = setOf(testUsers.single { it.username == "test2" }.id)
         val groupId = testGroups.single { it.name == "test_I_2" }.id
 
@@ -353,7 +699,27 @@ class CourseControllerTest(
     }
 
     @Test
-    fun testRemoveFromGroupAsStudent() {
+    fun testRemoveUserNotInGroupFromGroup() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test1" }.id)
+        val groupId = testGroups.single { it.name == "test_I_2" }.id
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, groupId))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-group"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.NO_CONTENT.value(), rsp.code)
+        }
+    }
+
+    @Test
+    fun testRemoveUserFromGroupAsStudent() {
         // test
         val req = Request.Builder()
             .delete("".toRequestBody(MediaType.JSON.toMediaType()))
@@ -366,8 +732,80 @@ class CourseControllerTest(
         }
     }
 
-    private fun getUrl(endpoint: String): String {
-        return "${serverPath}api/$TEST_COURSE_CODE$endpoint"
+    @Test
+    fun testRemoveUnregisteredUserFromGroup() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test3" }.id)
+        val groupId = testGroups.single { it.name == "test_I_2" }.id
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, groupId))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-group"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "At least one of the users is not registered to the course",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testRemoveUserFromUnrelatedGroup() {
+        // prep
+        val userIds = setOf(testUsers.single { it.username == "test2" }.id)
+        val groupId = testGroups.single { it.name == "test_I_2" }.id
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, groupId))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-group", testCourses[1].code))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "Group id does not match course code",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    @Test
+    fun testRemoveNonexistentUserFromGroup() {
+        // prep
+        val userIds = setOf(99L)
+        val groupId = testGroups.single { it.name == "test_I_2" }.id
+
+        // test
+        val json = Json.encodeToString(CourseController.UserIdsAndGroupIdInput(userIds, groupId))
+
+        val req = Request.Builder()
+            .delete(json.toRequestBody(MediaType.JSON.toMediaType()))
+            .header(AUTHENTICATION_HEADER, "test1")
+            .url(getUrl("/remove-from-group"))
+            .build()
+
+        client.newCall(req).execute().use { rsp ->
+            assertEquals(StatusCode.BAD_REQUEST.value(), rsp.code)
+            assertEquals(
+                "At least one of the users does not exist",
+                getBadRequestMessage(rsp.body!!.string())
+            )
+        }
+    }
+
+    private fun getUrl(endpoint: String, courseCode: String = TEST_COURSE_CODE): String {
+        return "${serverPath}api/$courseCode$endpoint"
     }
 
     private fun getDb(): JdbcDatabase {
@@ -382,5 +820,11 @@ class CourseControllerTest(
 
         private const val AUTHENTICATION_HEADER = "Authentication"
         private const val TEST_COURSE_CODE = "TEST.01.001"
+
+        private val BAD_REQUEST_MESSAGE_REGEX = Regex("<h2>message: (.+)</h2>")
+
+        private fun getBadRequestMessage(responseString: String): String {
+            return BAD_REQUEST_MESSAGE_REGEX.find(responseString)!!.groups[1]!!.value
+        }
     }
 }
