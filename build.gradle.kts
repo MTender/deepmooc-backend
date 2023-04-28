@@ -9,7 +9,7 @@ plugins {
     kotlin("plugin.serialization") version "1.8.20"
 
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.google.devtools.ksp") version "1.8.20-1.0.10"
+    id("com.google.devtools.ksp") version "1.8.20-1.0.11"
     id("io.jooby.openAPI") version "2.16.2"
 }
 
