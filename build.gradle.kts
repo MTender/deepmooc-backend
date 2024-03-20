@@ -4,13 +4,13 @@ val komapperVersion: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.8.20"
-    kotlin("kapt") version "1.8.20"
-    kotlin("plugin.serialization") version "1.8.20"
+    kotlin("jvm")
+    kotlin("kapt")
+    kotlin("plugin.serialization")
 
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.google.devtools.ksp") version "1.8.20-1.0.11"
-    id("io.jooby.openAPI") version "2.16.2"
+    id("io.jooby.openAPI") version "2.16.3"
 }
 
 group = "ee.deepmooc"
@@ -29,7 +29,7 @@ application {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8", kotlinVersion))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     kapt("io.jooby:jooby-apt:$joobyVersion")
 
@@ -48,15 +48,15 @@ dependencies {
     ksp("org.komapper:komapper-processor:$komapperVersion")
 
     implementation("io.jooby:jooby-hikari:$joobyVersion")
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.3")
 
-    implementation("ch.qos.logback:logback-classic:1.4.6")
-    implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+    implementation("ch.qos.logback:logback-classic:1.5.3")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
     implementation("io.jooby:jooby-swagger-ui:$joobyVersion")
 
     testImplementation(kotlin("test-junit5", kotlinVersion))
     testImplementation("io.jooby:jooby-test:$joobyVersion")
-    testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
+    testImplementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
 tasks.test {
