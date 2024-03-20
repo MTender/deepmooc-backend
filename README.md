@@ -3,19 +3,15 @@
 ## Requirements
 
 - JDK 11
-- Gradle
-- PostgreSQL
 
 ## Setup
 
-1. Database
-   1. Create a local PostgreSQL database
-   2. Run `db/create_tables.sql` script to create tables and keys
-2. Application
-   1. Configure application to use created database in `conf/application.conf`
-   2. (optional) Configure new keystore and SAML IdP
-   3. Build using `./gradlew build`
-   4. Run using `./gradlew joobyRun`
+The easiest way to run the application is by using docker compose:
+
+1. Build the application `./gradlew shadowJar`
+2. Run using `docker compose up`
+
+To use authentication a SAML IdP needs to be configured as well.
 
 ## Documentation
 

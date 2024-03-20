@@ -7,7 +7,7 @@ create table if not exists public.users
 );
 
 alter table public.users
-    owner to postgres;
+    owner to deepmooc;
 
 create table if not exists public.courses
 (
@@ -20,7 +20,7 @@ create table if not exists public.courses
 );
 
 alter table public.courses
-    owner to postgres;
+    owner to deepmooc;
 
 create table if not exists public.course_registrations
 (
@@ -40,7 +40,7 @@ create table if not exists public.course_registrations
 );
 
 alter table public.course_registrations
-    owner to postgres;
+    owner to deepmooc;
 
 create table if not exists public.groups
 (
@@ -58,7 +58,7 @@ create table if not exists public.groups
 );
 
 alter table public.groups
-    owner to postgres;
+    owner to deepmooc;
 
 create table if not exists public.group_registrations
 (
@@ -77,7 +77,7 @@ create table if not exists public.group_registrations
 );
 
 alter table public.group_registrations
-    owner to postgres;
+    owner to deepmooc;
 
 create index fki_group_registrations_group_fkey
     on public.group_registrations (group_id);

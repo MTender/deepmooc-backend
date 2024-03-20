@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  deepmooc-backend:
+    build: .
+    image: deepmooc-backend
+    environment:
+      DB_URL: jdbc:postgresql://deepmooc-postgres:5432/deepmooc
+      DB_USER: deepmooc
+      DB_PASSWORD: dbf8e63a-81e9-413a-8d97-8e4949560170
+    ports:
+      - "8080:8080"
+    depends_on:
+      - deepmooc-postgres
+
+  deepmooc-postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: deepmooc
+      POSTGRES_USER: deepmooc
+      POSTGRES_PASSWORD: dbf8e63a-81e9-413a-8d97-8e4949560170
+    ports:
+      - "5432:5432"
+    volumes:
+      - deepmooc-pg-data:/var/lib/postgresql/data
+      - ./db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+volumes:
+  deepmooc-pg-data:
+    name: deepmooc-pg-data

@@ -1,9 +1,7 @@
 package ee.deepmooc
 
-import com.typesafe.config.Config
 import ee.deepmooc.controller.CourseController
 import ee.deepmooc.controller.GeneralController
-import ee.deepmooc.controller.ServiceProviderMetadataController
 import ee.deepmooc.modules.*
 import io.jooby.Kooby
 import io.jooby.OpenAPIModule
@@ -28,9 +26,7 @@ class App : Kooby({
 
     install(OpenAPIModule())
 
-    mvc(ServiceProviderMetadataController::class)
-
-    val testAuth: Boolean = config.getBooleanOrDefault("useTestAuth", false)
+    val testAuth: Boolean = config.hasPath("useTestAuth") && config.getBoolean("useTestAuth")
 
     if (testAuth) {
         install(TestAuthModule())
@@ -39,15 +35,11 @@ class App : Kooby({
     }
 
     mvc(GeneralController::class)
-
     mvc(CourseController::class)
+
+    assets("/saml-sp-metadata", config.getString("saml.spMetadataPath"))
 })
 
 fun main(args: Array<String>) {
     runApp(args, App::class)
-}
-
-fun Config.getBooleanOrDefault(path: String, default: Boolean): Boolean {
-    if (this.hasPath(path)) return this.getBoolean(path)
-    return default
 }

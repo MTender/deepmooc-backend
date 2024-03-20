@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="deepmooc@localhost" uuid="adefdc6d-9045-480a-9fee-5b142dead774">
+    <data-source source="LOCAL" name="deepmooc-postgres" uuid="2da3cf4f-fb63-4b57-8e6a-883e8538973a">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
