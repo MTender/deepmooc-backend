@@ -89,3 +89,8 @@ tasks.joobyRun {
 tasks.jar {
     dependsOn(tasks.openAPI)
 }
+
+tasks.shadowJar {
+    mergeServiceFiles()
+    dependsOn(tasks.openAPI)
+}
