@@ -3,6 +3,7 @@
 ## Requirements
 
 - JDK 21
+- Docker
 
 ## Setup
 
