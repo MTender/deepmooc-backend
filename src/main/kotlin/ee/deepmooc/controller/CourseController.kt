@@ -6,15 +6,15 @@ import ee.deepmooc.controller.CourseController.Companion.COURSE_CODE_PATH_PARAM
 import ee.deepmooc.dto.Group
 import ee.deepmooc.dto.RegisteredUser
 import ee.deepmooc.dto.User
-import ee.deepmooc.model.*
+import ee.deepmooc.model.AccessLevel
 import ee.deepmooc.service.InputVerificationService
 import ee.deepmooc.service.RegistrationService
-import io.jooby.annotations.*
+import io.jooby.annotation.*
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.inject.Inject
 import kotlinx.serialization.Serializable
 import org.pac4j.core.profile.CommonProfile
-import javax.inject.Inject
 
 @Path("/api/{$COURSE_CODE_PATH_PARAM}")
 @Tag(name = "Course specific")

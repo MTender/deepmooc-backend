@@ -2,9 +2,9 @@
 <project version="4">
   <component name="EntryPointsManager">
     <list size="3">
-      <item index="0" class="java.lang.String" itemvalue="io.jooby.annotations.DELETE" />
-      <item index="1" class="java.lang.String" itemvalue="io.jooby.annotations.GET" />
-      <item index="2" class="java.lang.String" itemvalue="io.jooby.annotations.POST" />
+      <item index="0" class="java.lang.String" itemvalue="io.jooby.annotation.DELETE" />
+      <item index="1" class="java.lang.String" itemvalue="io.jooby.annotation.GET" />
+      <item index="2" class="java.lang.String" itemvalue="io.jooby.annotation.POST" />
     </list>
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
@@ -14,5 +14,5 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="temurin-11" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="temurin-21" project-jdk-type="JavaSDK" />
 </project>

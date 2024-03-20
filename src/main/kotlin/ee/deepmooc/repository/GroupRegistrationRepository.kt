@@ -2,10 +2,10 @@ package ee.deepmooc.repository
 
 import ee.deepmooc.model.GroupRegistrationEntity
 import ee.deepmooc.model.groupRegistrations
+import jakarta.inject.Inject
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.jdbc.JdbcDatabase
-import javax.inject.Inject
 
 class GroupRegistrationRepository @Inject constructor(
     private val db: JdbcDatabase

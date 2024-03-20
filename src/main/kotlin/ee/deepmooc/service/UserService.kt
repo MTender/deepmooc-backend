@@ -3,7 +3,7 @@ package ee.deepmooc.service
 import ee.deepmooc.dto.User
 import ee.deepmooc.model.UserEntity
 import ee.deepmooc.repository.UserRepository
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 class UserService @Inject constructor(
     private val userRepository: UserRepository

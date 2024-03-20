@@ -4,7 +4,7 @@ import ee.deepmooc.repository.CourseRegistrationRepository
 import ee.deepmooc.repository.CourseRepository
 import ee.deepmooc.repository.GroupRepository
 import ee.deepmooc.repository.UserRepository
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 class InputVerificationService @Inject constructor(
     private val userRepository: UserRepository,

@@ -3,11 +3,11 @@ package ee.deepmooc.repository
 import ee.deepmooc.model.*
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_CR
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_G
+import jakarta.inject.Inject
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.core.dsl.query.EntityStore
 import org.komapper.jdbc.JdbcDatabase
-import javax.inject.Inject
 
 class CourseRegistrationRepository @Inject constructor(
     private val db: JdbcDatabase

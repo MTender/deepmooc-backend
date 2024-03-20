@@ -1,13 +1,6 @@
 package ee.deepmooc.modules
 
-import io.jooby.Context
-import io.jooby.Extension
-import io.jooby.Jooby
-import io.jooby.MediaType
-import io.jooby.MessageDecoder
-import io.jooby.MessageEncoder
-import io.jooby.StatusCode
-import io.jooby.body
+import io.jooby.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -32,11 +25,12 @@ class KotlinxSerializationModule : Extension, MessageDecoder, MessageEncoder {
 
     @ExperimentalSerializationApi
     override fun decode(ctx: Context, type: Type): Any {
-        if (ctx.body.isInMemory) {
-            return Json.decodeFromString(serializer(type), ctx.body.bytes().decodeToString())
+        val body: Body = ctx.body()
+        if (body.isInMemory) {
+            return Json.decodeFromString(serializer(type), body.bytes().decodeToString())
         }
 
-        return ctx.body.stream().use {
+        return body.stream().use {
             Json.decodeFromStream(serializer(type), it)
         }
     }

@@ -1,5 +1,6 @@
 package ee.deepmooc.service
 
+import com.google.inject.Inject
 import ee.deepmooc.dto.CourseRegistration
 import ee.deepmooc.dto.Group
 import ee.deepmooc.dto.RegisteredUser
@@ -11,7 +12,6 @@ import ee.deepmooc.repository.CourseRegistrationRepository
 import ee.deepmooc.repository.GroupRegistrationRepository
 import ee.deepmooc.repository.GroupRepository
 import ee.deepmooc.repository.UserRepository
-import javax.inject.Inject
 
 class RegistrationService @Inject constructor(
     private val userRepository: UserRepository,

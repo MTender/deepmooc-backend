@@ -2,21 +2,21 @@ package ee.deepmooc.auth
 
 import ee.deepmooc.service.AuthService
 import io.jooby.Jooby
-import io.jooby.require
+import io.jooby.kt.require
 import org.pac4j.core.authorization.generator.AuthorizationGenerator
 import org.pac4j.core.profile.UserProfile
 import java.util.*
 
-class PermissionManager {
+class RoleManager {
 
     companion object {
 
-        fun getPermissionsGenerator(app: Jooby): AuthorizationGenerator {
-            return AuthorizationGenerator { _, profile ->
+        fun getRolesGenerator(app: Jooby): AuthorizationGenerator {
+            return AuthorizationGenerator { _, _, profile ->
 
                 val authService = app.require(AuthService::class)
 
-                profile.addPermissions(authService.generateUserPermissions(profile.getUid()))
+                profile.addRoles(authService.generateUserRoles(profile.getUid()))
 
                 Optional.of(profile)
             }

@@ -8,15 +8,17 @@ plugins {
     kotlin("kapt")
     kotlin("plugin.serialization")
 
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.google.devtools.ksp") version "1.8.20-1.0.11"
-    id("io.jooby.openAPI") version "2.16.3"
+    id("io.spring.dependency-management") version "1.1.4"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
+    id("io.jooby.openAPI")
 }
 
 group = "ee.deepmooc"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url = uri("https://build.shibboleth.net/nexus/content/repositories/releases/")
@@ -27,17 +29,24 @@ application {
     mainClass.set("ee.deepmooc.AppKt")
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("io.jooby:jooby-bom:$joobyVersion")
+    }
+}
+
 dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
+    implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-    kapt("io.jooby:jooby-apt:$joobyVersion")
+    kapt("io.jooby:jooby-apt")
 
-    implementation("io.jooby:jooby-jetty:$joobyVersion")
-    implementation("io.jooby:jooby-guice:$joobyVersion")
+    implementation("io.jooby:jooby-jetty")
+    implementation("io.jooby:jooby-kotlin")
+    implementation("io.jooby:jooby-guice")
 
-    implementation("io.jooby:jooby-pac4j:$joobyVersion")
-    implementation("org.pac4j:pac4j-saml:4.5.7")
+    implementation("io.jooby:jooby-pac4j")
+    implementation("org.pac4j:pac4j-saml-opensamlv5:5.7.3")
 
     platform("org.komapper:komapper-platform:$komapperVersion").let {
         implementation(it)
@@ -47,15 +56,15 @@ dependencies {
     implementation("org.komapper:komapper-dialect-postgresql-jdbc:$komapperVersion")
     ksp("org.komapper:komapper-processor:$komapperVersion")
 
-    implementation("io.jooby:jooby-hikari:$joobyVersion")
+    implementation("io.jooby:jooby-hikari")
     implementation("org.postgresql:postgresql:42.7.3")
 
     implementation("ch.qos.logback:logback-classic:1.5.3")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
-    implementation("io.jooby:jooby-swagger-ui:$joobyVersion")
+    implementation("io.jooby:jooby-swagger-ui")
 
-    testImplementation(kotlin("test-junit5", kotlinVersion))
-    testImplementation("io.jooby:jooby-test:$joobyVersion")
+    testImplementation(kotlin("test-junit5"))
+    testImplementation("io.jooby:jooby-test")
     testImplementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
@@ -64,7 +73,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(21)
 }
 
 // for annotation processing

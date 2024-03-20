@@ -3,11 +3,11 @@ package ee.deepmooc.repository
 import ee.deepmooc.model.*
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.CR_JOIN_GR
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.G_JOIN_GR
+import jakarta.inject.Inject
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.core.dsl.query.singleOrNull
 import org.komapper.jdbc.JdbcDatabase
-import javax.inject.Inject
 
 class GroupRepository @Inject constructor(
     private val db: JdbcDatabase

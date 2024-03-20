@@ -1,14 +1,14 @@
 package ee.deepmooc.modules
 
 import io.jooby.Route
-import io.jooby.Route.Decorator
+import io.jooby.Route.Filter
 import io.jooby.ServiceKey
 import org.komapper.jdbc.JdbcDatabase
 
 class KomapperTransactionalRequest(
     private val key: ServiceKey<JdbcDatabase>,
     private var enabledByDefault: Boolean = true
-) : Decorator {
+) : Filter {
 
     constructor() : this(ServiceKey.key(JdbcDatabase::class.java))
 

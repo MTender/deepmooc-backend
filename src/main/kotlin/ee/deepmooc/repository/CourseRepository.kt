@@ -5,12 +5,12 @@ import ee.deepmooc.model.CourseRegistrationEntity
 import ee.deepmooc.model.courseRegistrations
 import ee.deepmooc.model.courses
 import ee.deepmooc.repository.util.RepositoryUtils.Companion.C_JOIN_CR
+import jakarta.inject.Inject
 import org.komapper.core.dsl.Meta
 import org.komapper.core.dsl.QueryDsl
 import org.komapper.core.dsl.query.EntityStore
 import org.komapper.core.dsl.query.singleOrNull
 import org.komapper.jdbc.JdbcDatabase
-import javax.inject.Inject
 
 class CourseRepository @Inject constructor(
     private val db: JdbcDatabase

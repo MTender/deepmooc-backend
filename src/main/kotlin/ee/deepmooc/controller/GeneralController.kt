@@ -5,12 +5,12 @@ import ee.deepmooc.dto.CourseRegistration
 import ee.deepmooc.dto.User
 import ee.deepmooc.service.RegistrationService
 import ee.deepmooc.service.UserService
-import io.jooby.annotations.ContextParam
-import io.jooby.annotations.GET
-import io.jooby.annotations.Path
+import io.jooby.annotation.ContextParam
+import io.jooby.annotation.GET
+import io.jooby.annotation.Path
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.inject.Inject
 import org.pac4j.core.profile.CommonProfile
-import javax.inject.Inject
 
 @Path("/api/general")
 @Tag(name = "General")

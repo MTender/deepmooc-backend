@@ -5,7 +5,7 @@ import ee.deepmooc.model.CourseEntity
 import ee.deepmooc.model.CourseRegistrationEntity
 import ee.deepmooc.repository.CourseRepository
 import ee.deepmooc.repository.UserRepository
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 class AuthService @Inject constructor(
     private val userRepository: UserRepository,
@@ -14,34 +14,34 @@ class AuthService @Inject constructor(
 
     companion object {
 
-        private const val PERMISSION_PREFIX = "perm_"
+        private const val ROLE_PREFIX = "ROLE_"
 
-        fun constructPermissionString(courseCode: String, accessLevel: AccessLevel): String {
-            return PERMISSION_PREFIX + courseCode + "_" + accessLevel
+        fun constructRoleString(courseCode: String, accessLevel: AccessLevel): String {
+            return ROLE_PREFIX + courseCode + "_" + accessLevel
         }
 
-        fun getGrantedPermissions(courseCode: String, accessLevel: AccessLevel): Set<String> {
-            val grantedPermissions: MutableSet<String> = mutableSetOf()
+        fun getGrantedRoles(courseCode: String, accessLevel: AccessLevel): Set<String> {
+            val grantedRoles: MutableSet<String> = mutableSetOf()
 
-            for (level in AccessLevel.values()) {
-                grantedPermissions.add(constructPermissionString(courseCode, level))
+            for (level in AccessLevel.entries) {
+                grantedRoles.add(constructRoleString(courseCode, level))
                 if (level == accessLevel) break
             }
 
-            return grantedPermissions.toSet()
+            return grantedRoles.toSet()
         }
     }
 
-    fun generateUserPermissions(username: String): Set<String> {
+    fun generateUserRoles(username: String): Set<String> {
         val userEntity = userRepository.fetchByUsername(username)
 
         val courseRegistrations: Map<CourseRegistrationEntity, CourseEntity?> =
             courseRepository.fetchCourseRegistrationsOfUser(userEntity.id)
 
-        val permissions = courseRegistrations.flatMap {
-            getGrantedPermissions(it.value!!.code, it.key.accessLevel)
+        val roles = courseRegistrations.flatMap {
+            getGrantedRoles(it.value!!.code, it.key.accessLevel)
         }
 
-        return permissions.toSet()
+        return roles.toSet()
     }
 }
